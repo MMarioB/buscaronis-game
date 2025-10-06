@@ -25,12 +25,35 @@ export function Board({
   const rows = board.length;
   const cols = board[0]?.length || 0;
 
+  // Determinar el tamaño del tablero y aplicar clases apropiadas
+  const getBoardSize = (): 'small' | 'medium' | 'large' => {
+    if (cols >= 30) return 'large';
+    if (cols >= 16) return 'medium';
+    return 'small';
+  };
+
+  const boardSize = getBoardSize();
+
+  // Ajustar gap y padding según tamaño
+  const getSpacingClasses = () => {
+    switch (boardSize) {
+      case 'large':
+        return 'gap-[1px] p-1 sm:p-2';
+      case 'medium':
+        return 'gap-[1.5px] p-2 sm:p-3';
+      case 'small':
+      default:
+        return 'gap-[2px] p-3 sm:p-4';
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-2 sm:p-4 w-full overflow-x-auto">
       <div
-        className="inline-grid gap-1 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md p-4 sm:p-6 rounded-2xl shadow-2xl border-2 border-orange-500/20"
+        className={`inline-grid ${getSpacingClasses()} bg-gradient-to-br from-orange-900/60 to-red-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-orange-700/50`}
         style={{
           gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+          maxWidth: boardSize === 'large' ? '98vw' : boardSize === 'medium' ? '95vw' : '90vw',
         }}
       >
         {board.map((row, rowIndex) =>
@@ -45,6 +68,7 @@ export function Board({
               onRightClick={onCellRightClick(rowIndex, colIndex)}
               gameOver={gameOver}
               isExploded={explodedCell?.row === rowIndex && explodedCell?.col === colIndex}
+              boardSize={boardSize} // NUEVO PROP
             />
           ))
         )}
