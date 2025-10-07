@@ -1,26 +1,295 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #ffffff;
+    --foreground: #171717;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    :root {
+        --blue: #4ECDC4;
+        --orange: #FF6B35;
+        --pink: #FF6B9D;
+        --yellow: #FFC857;
+    }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+@font-face {
+    font-family: 'Futura';
+    src: url('/fonts/futura.woff2') format('woff2'),
+        url('/fonts/futura.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Knockout';
+    src: url('/fonts/Knockout-HTF72-FullCruiserwt.woff2') format('woff2'),
+        url('/fonts/Knockout-HTF72-FullCruiserwt.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+.font-futura {
+    font-family: 'Futura', sans-serif;
+}
+
+.font-knockout {
+    font-family: 'Knockout', sans-serif;
+}
+
+.text-desalia-blue {
+    color: var(--blue);
+}
+
+.text-desalia-orange {
+    color: var(--orange);
+}
+
+.text-desalia-pink {
+    color: var(--pink);
+}
+
+.text-desalia-yellow {
+    color: var(--yellow);
+}
+
+.animated-gradient {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradientFlow 15s ease infinite;
+}
+
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    animation: float 25s linear infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0);
+        opacity: 0;
+    }
+
+    10%,
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-100vh);
+        opacity: 0;
+    }
+}
+
+@keyframes neon-flicker {
+
+    0%,
+    100% {
+        text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fefae0, 0 0 20px #fefae0;
+    }
+
+    50% {
+        text-shadow: 0 0 10px #fff, 0 0 15px #fefae0, 0 0 20px #fefae0, 0 0 25px #fefae0;
+    }
+}
+
+.animated-gradient {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient-flow 15s ease infinite;
+}
+
+@keyframes gradient-flow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.noise-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiGAAAAA3NCSVQICAjb4U/gAAAAMFBMVEX///9ISEiKiopFRUWAgIB/f38fHx9aWlqEhISERERPT09kZGSBgYGJiYlBQUFNTU233A57AAAACHRSTlMA/////////wDsjNHyAAAAQ0lEQVRIx2NgoBaKV6GxqY+pAYsYI4g4wBiAOMAcgDjAHIA4wByAOMAcgDjAHIA4wByAOMAcgDjAHIA4YBYAAL21A/bRES4bAAAAAElFTkSuQmCC');
+    opacity: 0.05;
+    pointer-events: none;
+}
+
+.vignette {
+    box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes neon-flicker {
+
+    0%,
+    100% {
+        text-shadow:
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 15px #fff,
+            0 0 20px #ffdd73,
+            0 0 35px #ffdd73,
+            0 0 40px #ffdd73,
+            0 0 50px #ffdd73,
+            0 0 75px #ffdd73;
+        opacity: 1;
+    }
+
+    50% {
+        text-shadow:
+            0 0 2px #fff,
+            0 0 5px #fff,
+            0 0 8px #fff,
+            0 0 10px #f5c842,
+            0 0 15px #f5c842,
+            0 0 20px #f5c842,
+            0 0 25px #f5c842,
+            0 0 35px #f5c842;
+        opacity: 0.8;
+    }
+}
+
+.animate-neon-flicker {
+    animation: neon-flicker 2s infinite alternate;
+}
+
+@keyframes sway {
+
+    0%,
+    100% {
+        transform: rotate(1deg);
+    }
+
+    50% {
+        transform: rotate(-1.5deg);
+    }
+}
+
+.animate-sway {
+    animation: sway 8s ease-in-out infinite;
+    transform-origin: bottom center;
+}
+
+.animate-sway-delay {
+    animation: sway 8s ease-in-out infinite -4s;
+    transform-origin: bottom center;
+}
+
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(to bottom right,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0.4),
+            rgba(255, 255, 255, 0));
+    transform: rotate(45deg);
+    transition: transform 0.6s ease;
+    transform: translateX(-150%);
+}
+
+.btn-primary:hover::after {
+    transform: translateX(100%);
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes sway-delay {
+  0%, 100% { transform: rotate(2deg) scaleX(-1); }
+  50% { transform: rotate(-2deg) scaleX(-1); }
+}
+
+@keyframes neon-flicker {
+  0%, 100% { text-shadow: 0 0 10px rgba(253, 224, 71, 0.8), 0 0 20px rgba(253, 224, 71, 0.5); }
+  50% { text-shadow: 0 0 20px rgba(253, 224, 71, 1), 0 0 30px rgba(253, 224, 71, 0.8); }
+}
+
+.animate-sway {
+  animation: sway 4s ease-in-out infinite;
+}
+
+.animate-sway-delay {
+  animation: sway-delay 4s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.animate-neon-flicker {
+  animation: neon-flicker 2s ease-in-out infinite;
+}
+
+.animated-gradient {
+  background: linear-gradient(135deg, #FFB347, #FF6B9D, #4ECDC4);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.noise-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.vignette {
+  box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.3);
 }

@@ -6,38 +6,48 @@ interface GameControlsProps {
   currentDifficulty: Difficulty;
   onDifficultyChange: (difficulty: Difficulty) => void;
   onNewGame: () => void;
+  isDesktop: boolean;
 }
-
-const difficulties: { value: Difficulty; label: string }[] = [
-  { value: 'easy', label: 'Chill (9x9)' },
-  { value: 'medium', label: 'Desafío (16x16)' },
-  { value: 'hard', label: 'Vive Ahora (16x30)' },
-];
 
 export function GameControls({
   currentDifficulty,
   onDifficultyChange,
   onNewGame,
+  isDesktop,
 }: GameControlsProps) {
-  return (
-    <div className="flex flex-wrap gap-3 sm:gap-4 justify-center items-center mb-6">
-      {difficulties.map(({ value, label }) => (
-        <Button
-          key={value}
-          onClick={() => onDifficultyChange(value)}
-          variant={currentDifficulty === value ? 'active' : 'secondary'}
-          className="text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3"
-        >
-          {label}
-        </Button>
-      ))}
+  const difficulties: { key: Difficulty; label: string }[] = [
+    { key: 'easy', label: 'Chill 🏖️' },
+    { key: 'medium', label: 'Desafío 🔥' },
+    { key: 'hard', label: 'Vive Ahora 💪' },
+  ];
 
-      <Button
-        onClick={onNewGame}
-        variant="primary"
-        className="text-sm sm:text-base px-5 sm:px-7 py-2 sm:py-3 font-bold"
-      >
-        ⭐ Nuevo Desafío
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+      {difficulties.map(({ key, label }) => {
+        const isHard = key === 'hard';
+        const isDisabled = isHard && !isDesktop;
+
+        return (
+          <div key={key} className="relative group">
+            <Button
+              onClick={() => onDifficultyChange(key)}
+              variant={currentDifficulty === key ? 'active' : 'secondary'}
+              disabled={isDisabled}
+              className="text-sm sm:text-base"
+            >
+              {label}
+            </Button>
+            {isDisabled && (
+              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-3 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                Solo en desktop 🖥️
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      <Button onClick={onNewGame} variant="primary" className="text-sm sm:text-base">
+        🎮 Nuevo Juego
       </Button>
     </div>
   );

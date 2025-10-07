@@ -1,10 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { Hero } from '@/components/landing/Hero';
-import { HowToPlay } from '@/components/landing/HowToPlay';
-import { PrizesSection } from '@/components/landing/PrizesSection';
-import { Footer } from '@/components/landing/Footer';
+import { useState, useCallback } from 'react';
 import { Board } from '@/components/game/GameBoard';
 import { GameStats } from '@/components/game/GameStats';
 import { GameControls, type Difficulty } from '@/components/game/GameControls';
@@ -16,7 +12,6 @@ import { useBoard } from '@/hooks/useBoard';
 import { useGameState } from '@/hooks/useGameState';
 import { useQuestions } from '@/hooks/useQuestions';
 import { useTimer } from '@/hooks/useTimer';
-import { useIsDesktop } from '@/hooks/useMediaQuery';
 import type { Question, GameConfig } from '@/lib/types';
 
 const DIFFICULTIES: Record<Difficulty, GameConfig> = {
@@ -27,7 +22,6 @@ const DIFFICULTIES: Record<Difficulty, GameConfig> = {
 
 export default function Home() {
   // Hooks
-  const isDesktop = useIsDesktop();
   const { board, flagCount, initBoard, handleCellClick, handleCellRightClick } = useBoard();
   const {
     gameState,
@@ -53,19 +47,6 @@ export default function Home() {
   const [showStats, setShowStats] = useState(false);
   const [explodedCell, setExplodedCell] = useState<{ row: number; col: number } | null>(null);
   const [moves, setMoves] = useState(0);
-
-  // Auto-cambiar a medium si está en hard y cambia a móvil
-  useEffect(() => {
-    if (difficulty === 'hard' && !isDesktop) {
-      setDifficulty('medium');
-      const config = DIFFICULTIES.medium;
-      initBoard(config);
-      resetStats();
-      resetTimer();
-      setGameState('ready');
-      setMoves(0);
-    }
-  }, [isDesktop, difficulty, initBoard, resetStats, resetTimer, setGameState]);
 
   // Inicializar juego
   const startNewGame = useCallback(() => {
@@ -154,11 +135,13 @@ export default function Home() {
 
       if (isCorrect) {
         addCorrectAnswer();
+        // Plantar la bandera
         handleCellRightClick(pendingFlag.row, pendingFlag.col);
       } else {
         addIncorrectAnswer();
       }
 
+      // Mostrar explicación
       setCurrentQuestion(null);
       setShowExplanation(true);
     },
@@ -177,7 +160,7 @@ export default function Home() {
     setPendingFlag(null);
   }, []);
 
-  // Stats globales
+  // Stats globales (mock - aquí podrías usar localStorage)
   const globalStats = {
     gamesPlayed: 0,
     gamesWon: 0,
@@ -192,81 +175,64 @@ export default function Home() {
   };
 
   return (
-    <>
-      <Hero />
-      <HowToPlay />
-      <PrizesSection />
+    <div className="min-h-screen bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 p-4 sm:p-6 overflow-x-hidden">
+      {/* Header */}
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-4xl sm:text-6xl font-black uppercase mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 drop-shadow-lg">
+          ¡Desafía el Momento!
+        </h1>
+        <p className="text-base sm:text-xl text-yellow-200 font-semibold drop-shadow-md">
+          Encuentra todos los Ronis sin tocar las minas
+        </p>
+      </div>
 
-      <section
-        id="game-section"
-        className="min-h-screen bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 p-4 sm:p-6 overflow-x-hidden"
-      >
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-4xl sm:text-6xl font-black uppercase mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 drop-shadow-lg">
-            ¡Desafía el Momento!
-          </h1>
-          <p className="text-base sm:text-xl text-yellow-200 font-semibold drop-shadow-md">
-            Encuentra todos los Ronis sin tocar las minas
-          </p>
-        </div>
+      {/* Game Stats */}
+      <GameStats minesCount={DIFFICULTIES[difficulty].mines} flagsCount={flagCount} time={timer} />
 
-        <GameStats
-          minesCount={DIFFICULTIES[difficulty].mines}
-          flagsCount={flagCount}
-          time={timer}
-        />
+      {/* Game Controls */}
+      <GameControls
+        currentDifficulty={difficulty}
+        onDifficultyChange={handleDifficultyChange}
+        onNewGame={startNewGame}
+      />
 
-        <GameControls
-          currentDifficulty={difficulty}
-          onDifficultyChange={handleDifficultyChange}
-          onNewGame={startNewGame}
-          isDesktop={isDesktop}
-        />
+      {/* Board */}
+      <Board
+        board={board}
+        onCellClick={onCellClick}
+        onCellRightClick={onCellRightClick}
+        gameOver={gameState === 'won' || gameState === 'lost'}
+        explodedCell={explodedCell}
+      />
 
-        {!isDesktop && (
-          <div className="text-center text-yellow-200 text-sm mb-4 px-4 bg-black/20 py-2 rounded-lg mx-auto max-w-md">
-            💡 Tip: Modo Vive Ahora solo disponible en pantallas grandes
-          </div>
-        )}
+      {/* Modales */}
+      <QuestionModal
+        isOpen={currentQuestion !== null}
+        question={currentQuestion || { question: '', options: [], correct: 0 }}
+        onAnswer={handleAnswer}
+        onClose={handleQuestionClose}
+      />
 
-        <Board
-          board={board}
-          onCellClick={onCellClick}
-          onCellRightClick={onCellRightClick}
-          gameOver={gameState === 'won' || gameState === 'lost'}
-          explodedCell={explodedCell}
-        />
+      <ExplanationModal
+        isOpen={showExplanation}
+        isCorrect={lastAnswerCorrect}
+        correctAnswer={lastCorrectAnswer}
+        explanation={currentQuestion?.explanation}
+        onContinue={handleExplanationContinue}
+      />
 
-        <QuestionModal
-          isOpen={currentQuestion !== null}
-          question={currentQuestion || { question: '', options: [], correct: 0 }}
-          onAnswer={handleAnswer}
-          onClose={handleQuestionClose}
-        />
+      <GameOverModal
+        isOpen={showGameOver}
+        isWon={gameState === 'won'}
+        time={timer}
+        moves={moves}
+        correctAnswers={correctAnswers}
+        totalQuestions={totalQuestions}
+        onPlayAgain={startNewGame}
+        onViewStats={() => setShowStats(true)}
+      />
 
-        <ExplanationModal
-          isOpen={showExplanation}
-          isCorrect={lastAnswerCorrect}
-          correctAnswer={lastCorrectAnswer}
-          explanation={currentQuestion?.explanation}
-          onContinue={handleExplanationContinue}
-        />
-
-        <GameOverModal
-          isOpen={showGameOver}
-          isWon={gameState === 'won'}
-          time={timer}
-          moves={moves}
-          correctAnswers={correctAnswers}
-          totalQuestions={totalQuestions}
-          onPlayAgain={startNewGame}
-          onViewStats={() => setShowStats(true)}
-        />
-
-        <StatsModal isOpen={showStats} stats={globalStats} onClose={() => setShowStats(false)} />
-      </section>
-
-      <Footer />
-    </>
+      <StatsModal isOpen={showStats} stats={globalStats} onClose={() => setShowStats(false)} />
+    </div>
   );
 }
