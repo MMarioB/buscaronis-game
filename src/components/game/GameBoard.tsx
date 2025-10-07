@@ -25,7 +25,7 @@ export function Board({
   const rows = board.length;
   const cols = board[0]?.length || 0;
 
-  // Determinar el tamaño del tablero y aplicar clases apropiadas
+  // Determinar el tamaño del tablero
   const getBoardSize = (): 'small' | 'medium' | 'large' => {
     if (cols >= 30) return 'large';
     if (cols >= 16) return 'medium';
@@ -50,12 +50,14 @@ export function Board({
   return (
     <div className="flex items-center justify-center p-2 sm:p-4 w-full overflow-x-auto">
       <div
-        className={`inline-grid ${getSpacingClasses()} bg-gradient-to-br from-orange-900/60 to-red-900/60 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-orange-700/50`}
+        className={`inline-grid ${getSpacingClasses()} bg-gradient-to-br from-[#FF6B35]/40 via-[#FF8C42]/30 to-[#FFA55F]/40 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-[#FF6B35]/50 relative noise-bg`}
         style={{
           gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
           maxWidth: boardSize === 'large' ? '98vw' : boardSize === 'medium' ? '95vw' : '90vw',
         }}
       >
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/5 to-white/10 pointer-events-none"></div>
+
         {board.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <Cell
@@ -68,7 +70,7 @@ export function Board({
               onRightClick={onCellRightClick(rowIndex, colIndex)}
               gameOver={gameOver}
               isExploded={explodedCell?.row === rowIndex && explodedCell?.col === colIndex}
-              boardSize={boardSize} // NUEVO PROP
+              boardSize={boardSize}
             />
           ))
         )}

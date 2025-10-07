@@ -67,6 +67,14 @@ export default function Home() {
     }
   }, [isDesktop, difficulty, initBoard, resetStats, resetTimer, setGameState]);
 
+  // Scroll suave al juego
+  const scrollToGame = useCallback(() => {
+    const gameSection = document.getElementById('game-section');
+    if (gameSection) {
+      gameSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
   // Inicializar juego
   const startNewGame = useCallback(() => {
     const config = DIFFICULTIES[difficulty];
@@ -193,50 +201,81 @@ export default function Home() {
 
   return (
     <>
-      <Hero />
+      {/* Hero Section */}
+      <Hero onPlayClick={scrollToGame} />
+
+      {/* How to Play Section */}
       <HowToPlay />
+
+      {/* Prizes Section */}
       <PrizesSection />
 
+      {/* Game Section */}
       <section
         id="game-section"
-        className="min-h-screen bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 p-4 sm:p-6 overflow-x-hidden"
+        className="min-h-screen animated-gradient p-4 sm:p-6 overflow-x-hidden relative"
       >
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-4xl sm:text-6xl font-black uppercase mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 drop-shadow-lg">
-            ¡Desafía el Momento!
-          </h1>
-          <p className="text-base sm:text-xl text-yellow-200 font-semibold drop-shadow-md">
-            Encuentra todos los Ronis sin tocar las minas
-          </p>
+        {/* Noise texture */}
+        <div className="noise-bg absolute inset-0 pointer-events-none"></div>
+
+        {/* Vignette effect */}
+        <div className="vignette absolute inset-0 pointer-events-none"></div>
+
+        {/* Content */}
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="font-knockout text-5xl sm:text-6xl md:text-7xl font-black uppercase mb-3 text-white drop-shadow-2xl tracking-wider">
+              ¡DESAFÍA EL MOMENTO!
+            </h1>
+            <p className="font-futura text-lg sm:text-xl text-white/90 font-semibold drop-shadow-lg">
+              Encuentra todos los Ronis sin tocar las minas
+            </p>
+          </div>
+
+          {/* Game Stats */}
+          <GameStats
+            minesCount={DIFFICULTIES[difficulty].mines}
+            flagsCount={flagCount}
+            time={timer}
+          />
+
+          {/* Game Controls */}
+          <GameControls
+            currentDifficulty={difficulty}
+            onDifficultyChange={handleDifficultyChange}
+            onNewGame={startNewGame}
+            isDesktop={isDesktop}
+          />
+
+          {/* Tip for mobile */}
+          {!isDesktop && (
+            <div className="text-center font-futura text-white/80 text-sm mb-4 px-4 bg-white/10 backdrop-blur-sm py-3 rounded-xl mx-auto max-w-md border border-white/20">
+              💡 <span className="font-semibold">Tip:</span> Modo Vive Ahora solo disponible en
+              pantallas grandes
+            </div>
+          )}
+
+          {/* Board */}
+          <Board
+            board={board}
+            onCellClick={onCellClick}
+            onCellRightClick={onCellRightClick}
+            gameOver={gameState === 'won' || gameState === 'lost'}
+            explodedCell={explodedCell}
+          />
+
+          {/* Floating Stats Button */}
+          <button
+            onClick={() => setShowStats(true)}
+            className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-[#FF6B9D] to-[#FF8FB3] hover:from-[#FF8FB3] hover:to-[#FFA5C3] rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/30 backdrop-blur-sm z-50"
+            aria-label="Ver estadísticas"
+          >
+            📊
+          </button>
         </div>
 
-        <GameStats
-          minesCount={DIFFICULTIES[difficulty].mines}
-          flagsCount={flagCount}
-          time={timer}
-        />
-
-        <GameControls
-          currentDifficulty={difficulty}
-          onDifficultyChange={handleDifficultyChange}
-          onNewGame={startNewGame}
-          isDesktop={isDesktop}
-        />
-
-        {!isDesktop && (
-          <div className="text-center text-yellow-200 text-sm mb-4 px-4 bg-black/20 py-2 rounded-lg mx-auto max-w-md">
-            💡 Tip: Modo Vive Ahora solo disponible en pantallas grandes
-          </div>
-        )}
-
-        <Board
-          board={board}
-          onCellClick={onCellClick}
-          onCellRightClick={onCellRightClick}
-          gameOver={gameState === 'won' || gameState === 'lost'}
-          explodedCell={explodedCell}
-        />
-
+        {/* Modals */}
         <QuestionModal
           isOpen={currentQuestion !== null}
           question={currentQuestion || { question: '', options: [], correct: 0 }}
@@ -266,6 +305,7 @@ export default function Home() {
         <StatsModal isOpen={showStats} stats={globalStats} onClose={() => setShowStats(false)} />
       </section>
 
+      {/* Footer */}
       <Footer />
     </>
   );

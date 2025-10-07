@@ -14,16 +14,16 @@ export function StatBadge({
   size = 'md',
 }: StatBadgeProps) {
   const variants = {
-    default: 'bg-gradient-to-r from-slate-700/80 to-slate-800/80 text-white border-slate-600/50',
-    success: 'bg-gradient-to-r from-green-600/80 to-emerald-600/80 text-white border-green-500/50',
-    warning: 'bg-gradient-to-r from-yellow-600/80 to-orange-600/80 text-white border-yellow-500/50',
-    danger: 'bg-gradient-to-r from-red-600/80 to-rose-600/80 text-white border-red-500/50',
-    info: 'bg-gradient-to-r from-cyan-600/80 to-blue-600/80 text-white border-cyan-500/50',
+    default: 'bg-gradient-to-r from-white/15 to-white/10 text-white border-white/30',
+    success: 'bg-gradient-to-r from-[#4ECDC4]/30 to-[#3BB5B0]/20 text-white border-[#4ECDC4]/50',
+    warning: 'bg-gradient-to-r from-[#FFC857]/30 to-[#FFB347]/20 text-white border-[#FFC857]/50',
+    danger: 'bg-gradient-to-r from-[#FF6B9D]/30 to-[#FF8FB3]/20 text-white border-[#FF6B9D]/50',
+    info: 'bg-gradient-to-r from-[#4ECDC4]/30 to-[#5DD9D4]/20 text-white border-[#4ECDC4]/50',
   };
 
   const sizes = {
     sm: 'px-3 py-1.5 text-xs gap-2',
-    md: 'px-4 py-2 text-sm gap-2.5',
+    md: 'px-4 py-2.5 text-sm gap-2.5',
     lg: 'px-5 py-3 text-base gap-3',
   };
 
@@ -34,13 +34,14 @@ export function StatBadge({
           ${variants[variant]}
           backdrop-blur-md rounded-full 
           border-2 shadow-lg
-          font-semibold tracking-wide
-          transition-all duration-200
+          font-futura font-semibold tracking-wide
+          transition-all duration-300
+          hover:scale-105 hover:shadow-xl
         `}
     >
-      {icon && <span className="text-lg">{icon}</span>}
+      {icon && <span className="text-lg sm:text-xl drop-shadow-lg">{icon}</span>}
       <span className="opacity-90">{label}:</span>
-      <span className="font-bold tabular-nums">{value}</span>
+      <span className="font-knockout font-bold tabular-nums tracking-wider">{value}</span>
     </div>
   );
 }

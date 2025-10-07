@@ -175,35 +175,58 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 p-4 sm:p-6 overflow-x-hidden">
-      {/* Header */}
-      <div className="text-center mb-6 sm:mb-8">
-        <h1 className="text-4xl sm:text-6xl font-black uppercase mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 drop-shadow-lg">
-          ¡Desafía el Momento!
-        </h1>
-        <p className="text-base sm:text-xl text-yellow-200 font-semibold drop-shadow-md">
-          Encuentra todos los Ronis sin tocar las minas
-        </p>
+    <div className="min-h-screen animated-gradient p-4 sm:p-6 overflow-x-hidden relative">
+      {/* Noise texture */}
+      <div className="noise-bg fixed inset-0 pointer-events-none"></div>
+
+      {/* Vignette effect */}
+      <div className="vignette fixed inset-0 pointer-events-none"></div>
+
+      {/* Content wrapper */}
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="font-knockout text-5xl sm:text-6xl md:text-7xl font-black uppercase mb-3 text-white drop-shadow-2xl tracking-wider animate-neon-flicker">
+            DESCAPÁ EL MOMENTO
+          </h1>
+          <p className="font-futura text-lg sm:text-xl text-white/90 font-semibold drop-shadow-lg">
+            Encuentra todos los Ronis sin tocar las minas
+          </p>
+        </div>
+
+        {/* Game Stats */}
+        <GameStats
+          minesCount={DIFFICULTIES[difficulty].mines}
+          flagsCount={flagCount}
+          time={timer}
+        />
+
+        {/* Game Controls */}
+        <GameControls
+          currentDifficulty={difficulty}
+          onDifficultyChange={handleDifficultyChange}
+          onNewGame={startNewGame}
+          isDesktop={typeof window !== 'undefined' && window.innerWidth >= 1024}
+        />
+
+        {/* Board */}
+        <Board
+          board={board}
+          onCellClick={onCellClick}
+          onCellRightClick={onCellRightClick}
+          gameOver={gameState === 'won' || gameState === 'lost'}
+          explodedCell={explodedCell}
+        />
+
+        {/* Floating Stats Button */}
+        <button
+          onClick={() => setShowStats(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-[#FF6B9D] to-[#FF8FB3] hover:from-[#FF8FB3] hover:to-[#FFA5C3] rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/30 backdrop-blur-sm z-20"
+          aria-label="Ver estadísticas"
+        >
+          📊
+        </button>
       </div>
-
-      {/* Game Stats */}
-      <GameStats minesCount={DIFFICULTIES[difficulty].mines} flagsCount={flagCount} time={timer} />
-
-      {/* Game Controls */}
-      <GameControls
-        currentDifficulty={difficulty}
-        onDifficultyChange={handleDifficultyChange}
-        onNewGame={startNewGame}
-      />
-
-      {/* Board */}
-      <Board
-        board={board}
-        onCellClick={onCellClick}
-        onCellRightClick={onCellRightClick}
-        gameOver={gameState === 'won' || gameState === 'lost'}
-        explodedCell={explodedCell}
-      />
 
       {/* Modales */}
       <QuestionModal
