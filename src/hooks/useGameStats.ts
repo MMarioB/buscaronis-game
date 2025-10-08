@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { gameStorage } from '@/lib/storage';
-import { PlayerStats, GameResult } from '@/lib/types';
+import { PlayerStatsWithAchievements, GameResult } from '@/lib/types';
 
 export function useGameStats() {
-  const [stats, setStats] = useState<PlayerStats | null>(null);
+  const [stats, setStats] = useState<PlayerStatsWithAchievements | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Cargar stats al montar
