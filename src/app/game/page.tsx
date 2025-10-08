@@ -1,10 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { Hero } from '@/components/landing/Hero';
-import { HowToPlay } from '@/components/landing/HowToPlay';
-import { PrizesSection } from '@/components/landing/PrizesSection';
-import { Footer } from '@/components/landing/Footer';
+import { useState, useCallback } from 'react';
 import { Board } from '@/components/game/GameBoard';
 import { GameStats } from '@/components/game/GameStats';
 import { GameControls, type Difficulty } from '@/components/game/GameControls';
@@ -16,7 +12,6 @@ import { useBoard } from '@/hooks/useBoard';
 import { useGameState } from '@/hooks/useGameState';
 import { useQuestions } from '@/hooks/useQuestions';
 import { useTimer } from '@/hooks/useTimer';
-import { useIsDesktop } from '@/hooks/useMediaQuery';
 import type { Question, GameConfig } from '@/lib/types';
 
 const DIFFICULTIES: Record<Difficulty, GameConfig> = {
@@ -27,7 +22,6 @@ const DIFFICULTIES: Record<Difficulty, GameConfig> = {
 
 export default function Home() {
   // Hooks
-  const isDesktop = useIsDesktop();
   const { board, flagCount, initBoard, handleCellClick, handleCellRightClick } = useBoard();
   const {
     gameState,
@@ -53,27 +47,6 @@ export default function Home() {
   const [showStats, setShowStats] = useState(false);
   const [explodedCell, setExplodedCell] = useState<{ row: number; col: number } | null>(null);
   const [moves, setMoves] = useState(0);
-
-  // Auto-cambiar a medium si está en hard y cambia a móvil
-  useEffect(() => {
-    if (difficulty === 'hard' && !isDesktop) {
-      setDifficulty('medium');
-      const config = DIFFICULTIES.medium;
-      initBoard(config);
-      resetStats();
-      resetTimer();
-      setGameState('ready');
-      setMoves(0);
-    }
-  }, [isDesktop, difficulty, initBoard, resetStats, resetTimer, setGameState]);
-
-  // Scroll suave al juego
-  const scrollToGame = useCallback(() => {
-    const gameSection = document.getElementById('game-section');
-    if (gameSection) {
-      gameSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, []);
 
   // Inicializar juego
   const startNewGame = useCallback(() => {
@@ -162,11 +135,13 @@ export default function Home() {
 
       if (isCorrect) {
         addCorrectAnswer();
+        // Plantar la bandera
         handleCellRightClick(pendingFlag.row, pendingFlag.col);
       } else {
         addIncorrectAnswer();
       }
 
+      // Mostrar explicación
       setCurrentQuestion(null);
       setShowExplanation(true);
     },
@@ -185,7 +160,7 @@ export default function Home() {
     setPendingFlag(null);
   }, []);
 
-  // Stats globales
+  // Stats globales (mock - aquí podrías usar localStorage)
   const globalStats = {
     gamesPlayed: 0,
     gamesWon: 0,
@@ -200,113 +175,87 @@ export default function Home() {
   };
 
   return (
-    <>
-      {/* Hero Section */}
-      <Hero onPlayClick={scrollToGame} />
+    <div className="min-h-screen animated-gradient p-4 sm:p-6 overflow-x-hidden relative">
+      {/* Noise texture */}
+      <div className="noise-bg fixed inset-0 pointer-events-none"></div>
 
-      {/* How to Play Section */}
-      <HowToPlay />
+      {/* Vignette effect */}
+      <div className="vignette fixed inset-0 pointer-events-none"></div>
 
-      {/* Prizes Section */}
-      <PrizesSection />
-
-      {/* Game Section */}
-      <section
-        id="game-section"
-        className="min-h-screen animated-gradient p-4 sm:p-6 overflow-x-hidden relative"
-      >
-        {/* Noise texture */}
-        <div className="noise-bg absolute inset-0 pointer-events-none"></div>
-
-        {/* Vignette effect */}
-        <div className="vignette absolute inset-0 pointer-events-none"></div>
-
-        {/* Content */}
-        <div className="relative z-10">
-          {/* Header */}
-          <div className="text-center mb-6 sm:mb-8">
-            <h1 className="font-knockout text-5xl sm:text-6xl md:text-7xl font-black uppercase mb-3 text-white drop-shadow-2xl tracking-wider">
-              ¡DESAFÍA EL MOMENTO!
-            </h1>
-            <p className="font-futura text-lg sm:text-xl text-white/90 font-semibold drop-shadow-lg">
-              Encuentra todos los Ronis sin tocar las minas
-            </p>
-          </div>
-
-          {/* Game Stats */}
-          <GameStats
-            minesCount={DIFFICULTIES[difficulty].mines}
-            flagsCount={flagCount}
-            time={timer}
-          />
-
-          {/* Game Controls */}
-          <GameControls
-            currentDifficulty={difficulty}
-            onDifficultyChange={handleDifficultyChange}
-            onNewGame={startNewGame}
-            isDesktop={isDesktop}
-          />
-
-          {/* Tip for mobile */}
-          {!isDesktop && (
-            <div className="text-center font-futura text-white/80 text-sm mb-4 px-4 bg-white/10 backdrop-blur-sm py-3 rounded-xl mx-auto max-w-md border border-white/20">
-              💡 <span className="font-semibold">Tip:</span> Modo Vive Ahora solo disponible en
-              pantallas grandes
-            </div>
-          )}
-
-          {/* Board */}
-          <Board
-            board={board}
-            onCellClick={onCellClick}
-            onCellRightClick={onCellRightClick}
-            gameOver={gameState === 'won' || gameState === 'lost'}
-            explodedCell={explodedCell}
-          />
-
-          {/* Floating Stats Button */}
-          <button
-            onClick={() => setShowStats(true)}
-            className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-[#FF6B9D] to-[#FF8FB3] hover:from-[#FF8FB3] hover:to-[#FFA5C3] rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/30 backdrop-blur-sm z-50"
-            aria-label="Ver estadísticas"
-          >
-            📊
-          </button>
+      {/* Content wrapper */}
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="font-knockout text-5xl sm:text-6xl md:text-7xl font-black uppercase mb-3 text-white drop-shadow-2xl tracking-wider animate-neon-flicker">
+            DESCAPÁ EL MOMENTO
+          </h1>
+          <p className="font-futura text-lg sm:text-xl text-white/90 font-semibold drop-shadow-lg">
+            Encuentra todos los Ronis sin tocar las minas
+          </p>
         </div>
 
-        {/* Modals */}
-        <QuestionModal
-          isOpen={currentQuestion !== null}
-          question={currentQuestion || { question: '', options: [], correct: 0 }}
-          onAnswer={handleAnswer}
-          onClose={handleQuestionClose}
-        />
-
-        <ExplanationModal
-          isOpen={showExplanation}
-          isCorrect={lastAnswerCorrect}
-          correctAnswer={lastCorrectAnswer}
-          explanation={currentQuestion?.explanation}
-          onContinue={handleExplanationContinue}
-        />
-
-        <GameOverModal
-          isOpen={showGameOver}
-          isWon={gameState === 'won'}
+        {/* Game Stats */}
+        <GameStats
+          minesCount={DIFFICULTIES[difficulty].mines}
+          flagsCount={flagCount}
           time={timer}
-          moves={moves}
-          correctAnswers={correctAnswers}
-          totalQuestions={totalQuestions}
-          onPlayAgain={startNewGame}
-          onViewStats={() => setShowStats(true)}
         />
 
-        <StatsModal isOpen={showStats} stats={globalStats} onClose={() => setShowStats(false)} />
-      </section>
+        {/* Game Controls */}
+        <GameControls
+          currentDifficulty={difficulty}
+          onDifficultyChange={handleDifficultyChange}
+          onNewGame={startNewGame}
+          isDesktop={typeof window !== 'undefined' && window.innerWidth >= 1024}
+        />
 
-      {/* Footer */}
-      <Footer />
-    </>
+        {/* Board */}
+        <Board
+          board={board}
+          onCellClick={onCellClick}
+          onCellRightClick={onCellRightClick}
+          gameOver={gameState === 'won' || gameState === 'lost'}
+          explodedCell={explodedCell}
+        />
+
+        {/* Floating Stats Button */}
+        <button
+          onClick={() => setShowStats(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-[#FF6B9D] to-[#FF8FB3] hover:from-[#FF8FB3] hover:to-[#FFA5C3] rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/30 backdrop-blur-sm z-20"
+          aria-label="Ver estadísticas"
+        >
+          📊
+        </button>
+      </div>
+
+      {/* Modales */}
+      <QuestionModal
+        isOpen={currentQuestion !== null}
+        question={currentQuestion || { question: '', options: [], correct: 0 }}
+        onAnswer={handleAnswer}
+        onClose={handleQuestionClose}
+      />
+
+      <ExplanationModal
+        isOpen={showExplanation}
+        isCorrect={lastAnswerCorrect}
+        correctAnswer={lastCorrectAnswer}
+        explanation={currentQuestion?.explanation}
+        onContinue={handleExplanationContinue}
+      />
+
+      <GameOverModal
+        isOpen={showGameOver}
+        isWon={gameState === 'won'}
+        time={timer}
+        moves={moves}
+        correctAnswers={correctAnswers}
+        totalQuestions={totalQuestions}
+        onPlayAgain={startNewGame}
+        onViewStats={() => setShowStats(true)}
+      />
+
+      <StatsModal isOpen={showStats} stats={globalStats} onClose={() => setShowStats(false)} />
+    </div>
   );
 }
