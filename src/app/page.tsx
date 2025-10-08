@@ -17,6 +17,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { useQuestions } from '@/hooks/useQuestions';
 import { useTimer } from '@/hooks/useTimer';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
+import { useGameStats } from '@/hooks/useGameStats';
 import type { Question, GameConfig } from '@/lib/types';
 
 const DIFFICULTIES: Record<Difficulty, GameConfig> = {
@@ -41,6 +42,7 @@ export default function Home() {
   } = useGameState();
   const { getRandomQuestion, resetQuestions } = useQuestions();
   const { timer, resetTimer } = useTimer(gameState);
+  const { stats, saveGame } = useGameStats();
 
   // Estado local
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
@@ -53,6 +55,7 @@ export default function Home() {
   const [showStats, setShowStats] = useState(false);
   const [explodedCell, setExplodedCell] = useState<{ row: number; col: number } | null>(null);
   const [moves, setMoves] = useState(0);
+  const [gameStartTime, setGameStartTime] = useState<number | null>(null);
 
   // Auto-cambiar a medium si está en hard y cambia a móvil
   useEffect(() => {
@@ -75,6 +78,48 @@ export default function Home() {
     }
   }, []);
 
+  // Guardar resultado de partida
+  const saveGameResult = useCallback(
+    (won: boolean) => {
+      console.log('🎮 saveGameResult llamada - won:', won);
+      console.log('🎮 gameStartTime:', gameStartTime);
+
+      if (!gameStartTime) {
+        console.log('⚠️ No hay gameStartTime, no se puede guardar');
+        return;
+      }
+
+      const endTime = Date.now();
+      const timeElapsed = Math.floor((endTime - gameStartTime) / 1000);
+
+      const result = {
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        difficulty,
+        score,
+        won,
+        timeElapsed,
+        correctAnswers,
+        totalQuestions,
+        accuracy: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
+        streak: correctAnswers,
+      };
+
+      console.log('🎮 Resultado a guardar:', result);
+
+      const success = saveGame(result);
+
+      console.log('🎮 saveGame retornó:', success);
+
+      if (success) {
+        console.log('✅ Partida guardada:', result);
+      } else {
+        console.error('❌ Error guardando partida');
+      }
+    },
+    [gameStartTime, difficulty, score, correctAnswers, totalQuestions, saveGame]
+  );
+
   // Inicializar juego
   const startNewGame = useCallback(() => {
     const config = DIFFICULTIES[difficulty];
@@ -86,6 +131,7 @@ export default function Home() {
     setShowStats(false);
     setExplodedCell(null);
     setMoves(0);
+    setGameStartTime(Date.now());
     setGameState('ready');
   }, [difficulty, initBoard, resetStats, resetTimer, resetQuestions, setGameState]);
 
@@ -110,21 +156,27 @@ export default function Home() {
 
       if (gameState === 'ready') {
         setGameState('playing');
+        setGameStartTime(Date.now()); // 👈 NUEVA LÍNEA
+        console.log('🎮 Juego iniciado - gameStartTime establecido');
       }
 
       const result = handleCellClick(row, col);
       setMoves((prev) => prev + 1);
 
       if (result.hitMine) {
+        console.log('💥 Mina tocada - llamando saveGameResult(false)'); // 👈 NUEVA LÍNEA
         setGameState('lost');
         setExplodedCell({ row, col });
+        saveGameResult(false); // 👈 NUEVA LÍNEA
         setShowGameOver(true);
       } else if (result.won) {
+        console.log('🎉 Juego ganado - llamando saveGameResult(true)'); // 👈 NUEVA LÍNEA
         setGameState('won');
+        saveGameResult(true); // 👈 NUEVA LÍNEA
         setShowGameOver(true);
       }
     },
-    [gameState, handleCellClick, setGameState]
+    [gameState, handleCellClick, setGameState, saveGameResult] // 👈 Añadir saveGameResult
   );
 
   // Manejar click derecho (bandera con pregunta)
