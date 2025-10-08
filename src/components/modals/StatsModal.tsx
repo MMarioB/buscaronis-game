@@ -1,5 +1,8 @@
+'use client';
+
+import { useGameStats } from '@/hooks/useGameStats';
+import { formatTime, formatDate } from '@/lib/storage';
 import { Button } from '../ui/Button';
-import { StatBadge } from '../ui/StatBadge';
 
 interface GameStats {
   gamesPlayed: number;
@@ -16,21 +19,57 @@ interface GameStats {
 
 interface StatsModalProps {
   isOpen: boolean;
-  stats: GameStats;
+  stats: GameStats; // Stats de la sesión actual (las vamos a ignorar)
   onClose: () => void;
   onReset?: () => void;
 }
 
-export function StatsModal({ isOpen, stats, onClose, onReset }: StatsModalProps) {
+export function StatsModal({ isOpen, onClose }: StatsModalProps) {
+  const { stats: persistedStats, isLoading, resetStats, exportStats } = useGameStats();
+
   if (!isOpen) return null;
 
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-lg">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white" />
+      </div>
+    );
+  }
+
+  const stats = persistedStats || {
+    highScore: 0,
+    totalGamesPlayed: 0,
+    totalWins: 0,
+    totalLosses: 0,
+    averageAccuracy: 0,
+    totalCorrectAnswers: 0,
+    totalQuestions: 0,
+    bestStreak: 0,
+    gameHistory: [],
+  };
+
   const winRate =
-    stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
+    stats.totalGamesPlayed > 0 ? Math.round((stats.totalWins / stats.totalGamesPlayed) * 100) : 0;
 
-  const avgTime = stats.gamesWon > 0 ? Math.round(stats.totalTime / stats.gamesWon) : 0;
+  const handleReset = () => {
+    if (confirm('¿Estás seguro de que quieres resetear todas tus estadísticas?')) {
+      resetStats();
+    }
+  };
 
-  const triviaAccuracy =
-    stats.totalQuestions > 0 ? Math.round((stats.correctAnswers / stats.totalQuestions) * 100) : 0;
+  const handleExport = () => {
+    const data = exportStats();
+    if (data) {
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `buscaronis-stats-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-lg animate-in fade-in duration-300">
@@ -53,31 +92,34 @@ export function StatsModal({ isOpen, stats, onClose, onReset }: StatsModalProps)
             </h2>
           </div>
 
+          {/* High Score destacado */}
+          {stats.highScore > 0 && (
+            <div className="mb-6 p-5 bg-gradient-to-r from-yellow-400/30 to-yellow-500/30 backdrop-blur-sm border-2 border-yellow-400/50 rounded-2xl shadow-lg">
+              <div className="text-center">
+                <div className="text-5xl mb-3 drop-shadow-lg">🏆</div>
+                <div className="text-4xl font-knockout font-bold text-white mb-1 tabular-nums">
+                  {stats.highScore.toLocaleString()}
+                </div>
+                <div className="text-sm font-futura text-white/90 uppercase tracking-wide">
+                  HIGH SCORE
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <StatCard label="Partidas" value={stats.gamesPlayed} icon="🎮" variant="default" />
-            <StatCard label="Victorias" value={stats.gamesWon} icon="🏆" variant="success" />
+            <StatCard label="Partidas" value={stats.totalGamesPlayed} icon="🎮" variant="default" />
+            <StatCard label="Victorias" value={stats.totalWins} icon="🏆" variant="success" />
             <StatCard label="Tasa Victoria" value={`${winRate}%`} icon="📈" variant="info" />
             <StatCard
-              label="Mejor Tiempo"
-              value={stats.bestTime > 0 ? `${stats.bestTime}s` : '-'}
-              icon="⚡"
+              label="Precisión"
+              value={`${Math.round(stats.averageAccuracy)}%`}
+              icon="🎯"
               variant="warning"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
-            <div className="p-5 bg-gradient-to-br from-[#FF6B35]/30 to-[#FF8C42]/30 backdrop-blur-sm border-2 border-[#FF6B35]/50 rounded-2xl shadow-lg">
-              <div className="text-center">
-                <div className="text-4xl mb-3 drop-shadow-lg">🔥</div>
-                <div className="text-3xl font-knockout font-bold text-white mb-1 tabular-nums">
-                  {stats.currentStreak}
-                </div>
-                <div className="text-xs font-futura text-white/80 uppercase tracking-wide">
-                  Racha Actual
-                </div>
-              </div>
-            </div>
-
             <div className="p-5 bg-gradient-to-br from-[#4ECDC4]/30 to-[#4ECDC4]/20 backdrop-blur-sm border-2 border-[#4ECDC4]/50 rounded-2xl shadow-lg">
               <div className="text-center">
                 <div className="text-4xl mb-3 drop-shadow-lg">⭐</div>
@@ -89,20 +131,58 @@ export function StatsModal({ isOpen, stats, onClose, onReset }: StatsModalProps)
                 </div>
               </div>
             </div>
+
+            <div className="p-5 bg-gradient-to-br from-[#FF6B9D]/30 to-[#FF6B9D]/20 backdrop-blur-sm border-2 border-[#FF6B9D]/50 rounded-2xl shadow-lg">
+              <div className="text-center">
+                <div className="text-4xl mb-3 drop-shadow-lg">🧠</div>
+                <div className="text-3xl font-knockout font-bold text-white mb-1 tabular-nums">
+                  {stats.totalCorrectAnswers}/{stats.totalQuestions}
+                </div>
+                <div className="text-xs font-futura text-white/80 uppercase tracking-wide">
+                  Preguntas Correctas
+                </div>
+              </div>
+            </div>
           </div>
 
-          {stats.totalQuestions > 0 && (
-            <div className="p-5 bg-gradient-to-br from-[#FF6B9D]/30 to-[#FF6B9D]/20 backdrop-blur-sm border-2 border-[#FF6B9D]/50 rounded-2xl mb-6 shadow-lg">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <div className="text-xs font-futura text-white/80 mb-2 uppercase tracking-wide">
-                    Conocimiento Desalia
+          {/* Historial de partidas */}
+          {stats.gameHistory && stats.gameHistory.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-xl font-knockout font-bold text-white mb-3 uppercase tracking-wide">
+                📜 Últimas {stats.gameHistory.length} Partidas
+              </h3>
+              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
+                {stats.gameHistory.map((game) => (
+                  <div
+                    key={game.id}
+                    className={`p-4 rounded-xl border-2 backdrop-blur-sm ${
+                      game.won
+                        ? 'bg-green-500/20 border-green-400/50'
+                        : 'bg-red-500/20 border-red-400/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">{game.won ? '🎉' : '💀'}</div>
+                        <div>
+                          <div className="font-knockout text-white font-bold">
+                            {game.score.toLocaleString()} pts
+                            <span className="ml-2 text-xs px-2 py-1 bg-white/20 rounded">
+                              {game.difficulty.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="text-xs text-white/70 font-futura">
+                            {formatDate(game.date)} • {formatTime(game.timeElapsed)} •{' '}
+                            {game.accuracy}% precisión
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right text-xs text-white/70 font-futura">
+                        Racha: {game.streak}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xl sm:text-2xl font-knockout font-bold text-white tabular-nums">
-                    {stats.correctAnswers}/{stats.totalQuestions} correctas ({triviaAccuracy}%)
-                  </div>
-                </div>
-                <div className="text-5xl drop-shadow-lg">🧠</div>
+                ))}
               </div>
             </div>
           )}
@@ -116,14 +196,24 @@ export function StatsModal({ isOpen, stats, onClose, onReset }: StatsModalProps)
               CERRAR
             </Button>
 
-            {onReset && stats.gamesPlayed > 0 && (
-              <Button
-                onClick={onReset}
-                variant="secondary"
-                className="font-knockout px-10 py-3 text-base tracking-wider backdrop-blur-sm"
-              >
-                RESETEAR STATS
-              </Button>
+            {stats.totalGamesPlayed > 0 && (
+              <>
+                <Button
+                  onClick={handleExport}
+                  variant="secondary"
+                  className="font-knockout px-10 py-3 text-base tracking-wider backdrop-blur-sm"
+                >
+                  📥 EXPORTAR
+                </Button>
+
+                <Button
+                  onClick={handleReset}
+                  variant="secondary"
+                  className="font-knockout px-10 py-3 text-base tracking-wider backdrop-blur-sm !bg-red-500/30 hover:!bg-red-500/40"
+                >
+                  🗑️ RESETEAR
+                </Button>
+              </>
             )}
           </div>
         </div>
