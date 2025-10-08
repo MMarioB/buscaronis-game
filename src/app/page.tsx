@@ -12,13 +12,14 @@ import { QuestionModal } from '@/components/modals/QuestionModal';
 import { ExplanationModal } from '@/components/modals/ExplanationModal';
 import { GameOverModal } from '@/components/modals/GameOverModal';
 import { StatsModal } from '@/components/modals/StatsModal';
+import { AchievementUnlockedModal } from '@/components/modals/AchievementUnlockedModal';
 import { useBoard } from '@/hooks/useBoard';
-import { useGameState } from '@/hooks/useGameState';
 import { useQuestions } from '@/hooks/useQuestions';
 import { useTimer } from '@/hooks/useTimer';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
+import { useGameState } from '@/hooks/useGameState';
 import { useGameStats } from '@/hooks/useGameStats';
-import type { Question, GameConfig } from '@/lib/types';
+import type { Question, GameConfig, Achievement, PlayerStatsWithAchievements } from '@/lib/types';
 
 const DIFFICULTIES: Record<Difficulty, GameConfig> = {
   easy: { rows: 9, cols: 9, mines: 10, label: 'Chill', points: 100 },
@@ -56,6 +57,7 @@ export default function Home() {
   const [explodedCell, setExplodedCell] = useState<{ row: number; col: number } | null>(null);
   const [moves, setMoves] = useState(0);
   const [gameStartTime, setGameStartTime] = useState<number | null>(null);
+  const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
 
   // Auto-cambiar a medium si está en hard y cambia a móvil
   useEffect(() => {
@@ -107,17 +109,33 @@ export default function Home() {
 
       console.log('🎮 Resultado a guardar:', result);
 
+      // Obtener stats antes de guardar (con cast correcto)
+      const persistedStats = stats as PlayerStatsWithAchievements | null;
+      const statsBefore = persistedStats?.achievements?.length || 0;
+
       const success = saveGame(result);
 
       console.log('🎮 saveGame retornó:', success);
 
       if (success) {
         console.log('✅ Partida guardada:', result);
+
+        // Verificar si hay nuevos logros después de un pequeño delay
+        setTimeout(() => {
+          const updatedStats = stats as PlayerStatsWithAchievements | null;
+          const statsAfter = updatedStats?.achievements?.length || 0;
+          if (statsAfter > statsBefore && updatedStats?.achievements) {
+            // Mostrar el último logro desbloqueado
+            const lastAchievement = updatedStats.achievements[updatedStats.achievements.length - 1];
+            console.log('🏆 Nuevo logro desbloqueado:', lastAchievement);
+            setNewAchievement(lastAchievement);
+          }
+        }, 500);
       } else {
         console.error('❌ Error guardando partida');
       }
     },
-    [gameStartTime, difficulty, score, correctAnswers, totalQuestions, saveGame]
+    [gameStartTime, difficulty, score, correctAnswers, totalQuestions, saveGame, stats]
   );
 
   // Inicializar juego
@@ -156,7 +174,7 @@ export default function Home() {
 
       if (gameState === 'ready') {
         setGameState('playing');
-        setGameStartTime(Date.now()); // 👈 NUEVA LÍNEA
+        setGameStartTime(Date.now());
         console.log('🎮 Juego iniciado - gameStartTime establecido');
       }
 
@@ -164,19 +182,19 @@ export default function Home() {
       setMoves((prev) => prev + 1);
 
       if (result.hitMine) {
-        console.log('💥 Mina tocada - llamando saveGameResult(false)'); // 👈 NUEVA LÍNEA
+        console.log('💥 Mina tocada - llamando saveGameResult(false)');
         setGameState('lost');
         setExplodedCell({ row, col });
-        saveGameResult(false); // 👈 NUEVA LÍNEA
+        saveGameResult(false);
         setShowGameOver(true);
       } else if (result.won) {
-        console.log('🎉 Juego ganado - llamando saveGameResult(true)'); // 👈 NUEVA LÍNEA
+        console.log('🎉 Juego ganado - llamando saveGameResult(true)');
         setGameState('won');
-        saveGameResult(true); // 👈 NUEVA LÍNEA
+        saveGameResult(true);
         setShowGameOver(true);
       }
     },
-    [gameState, handleCellClick, setGameState, saveGameResult] // 👈 Añadir saveGameResult
+    [gameState, handleCellClick, setGameState, saveGameResult]
   );
 
   // Manejar click derecho (bandera con pregunta)
@@ -355,6 +373,12 @@ export default function Home() {
         />
 
         <StatsModal isOpen={showStats} stats={globalStats} onClose={() => setShowStats(false)} />
+
+        {/* Modal de logro desbloqueado */}
+        <AchievementUnlockedModal
+          achievement={newAchievement}
+          onClose={() => setNewAchievement(null)}
+        />
       </section>
 
       {/* Footer */}

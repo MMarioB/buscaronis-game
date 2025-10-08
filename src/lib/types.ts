@@ -91,3 +91,48 @@ export const DEFAULT_PLAYER_STATS: PlayerStats = {
 
 export const STORAGE_VERSION = '1.0.0';
 export const STORAGE_KEY = 'buscaronis_data';
+
+export type AchievementId =
+  | 'first_win'
+  | 'master_ron'
+  | 'desalia_expert'
+  | 'unstoppable_streak'
+  | 'perfectionist'
+  | 'speed_demon'
+  | 'trivia_master'
+  | 'veteran';
+
+export interface Achievement {
+  id: AchievementId;
+  title: string;
+  description: string;
+  icon: string;
+  requirement: number;
+  category: 'wins' | 'accuracy' | 'streak' | 'speed' | 'trivia' | 'games';
+  unlockedAt?: string; // ISO date
+}
+
+export type PlayerRank = 'aprendiz' | 'conocedor' | 'experto' | 'maestro';
+
+export interface RankInfo {
+  rank: PlayerRank;
+  title: string;
+  icon: string;
+  minGames: number;
+  color: string;
+}
+
+export interface AchievementProgress {
+  achievementId: AchievementId;
+  current: number;
+  target: number;
+  unlocked: boolean;
+  unlockedAt?: string;
+}
+
+export interface PlayerStatsWithAchievements extends PlayerStats {
+  achievements: Achievement[];
+  rank: PlayerRank;
+  consecutiveWins: number;
+  fastestWin: number;
+}

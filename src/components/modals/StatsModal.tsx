@@ -3,6 +3,9 @@
 import { useGameStats } from '@/hooks/useGameStats';
 import { formatTime, formatDate } from '@/lib/storage';
 import { Button } from '../ui/Button';
+import { AchievementsList } from '../game/AchievementsList';
+import { RANKS, calculateRankProgress } from '@/lib/achievements';
+import { PlayerStatsWithAchievements } from '@/lib/types';
 
 interface GameStats {
   gamesPlayed: number;
@@ -37,7 +40,7 @@ export function StatsModal({ isOpen, onClose }: StatsModalProps) {
     );
   }
 
-  const stats = persistedStats || {
+  const stats = (persistedStats || {
     highScore: 0,
     totalGamesPlayed: 0,
     totalWins: 0,
@@ -47,7 +50,11 @@ export function StatsModal({ isOpen, onClose }: StatsModalProps) {
     totalQuestions: 0,
     bestStreak: 0,
     gameHistory: [],
-  };
+    achievements: [],
+    rank: 'aprendiz',
+    consecutiveWins: 0,
+    fastestWin: Infinity,
+  }) as PlayerStatsWithAchievements;
 
   const winRate =
     stats.totalGamesPlayed > 0 ? Math.round((stats.totalWins / stats.totalGamesPlayed) * 100) : 0;
@@ -107,6 +114,60 @@ export function StatsModal({ isOpen, onClose }: StatsModalProps) {
             </div>
           )}
 
+          {/* Rango del Jugador */}
+          <div className="mb-6 p-5 bg-gradient-to-br from-purple-400/20 to-purple-500/20 backdrop-blur-sm border-2 border-purple-400/50 rounded-2xl shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="text-5xl drop-shadow-lg">
+                  {RANKS[stats.rank as keyof typeof RANKS].icon}
+                </div>
+                <div>
+                  <div className="text-xs font-futura text-white/70 uppercase tracking-wide">
+                    Tu Rango
+                  </div>
+                  <div className="text-2xl font-knockout font-bold text-white">
+                    {RANKS[stats.rank as keyof typeof RANKS].title}
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs font-futura text-white/70 mb-1">Partidas Jugadas</div>
+                <div className="text-3xl font-knockout font-bold text-white tabular-nums">
+                  {stats.totalGamesPlayed}
+                </div>
+              </div>
+            </div>
+
+            {/* Progreso hacia siguiente rango */}
+            {(() => {
+              const rankProgress = calculateRankProgress(stats.totalGamesPlayed);
+              const isMaxRank = rankProgress.percentage === 100 && stats.rank === 'maestro';
+
+              return !isMaxRank ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm text-white/80 font-futura">
+                    <span>Siguiente rango</span>
+                    <span className="font-knockout">
+                      {rankProgress.current} / {rankProgress.target}
+                    </span>
+                  </div>
+                  <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full bg-gradient-to-r ${RANKS[stats.rank as keyof typeof RANKS].color} transition-all duration-500 rounded-full`}
+                      style={{ width: `${rankProgress.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-2">
+                  <span className="text-sm font-futura text-white/80">
+                    ✨ ¡Has alcanzado el rango máximo! ✨
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
             <StatCard label="Partidas" value={stats.totalGamesPlayed} icon="🎮" variant="default" />
             <StatCard label="Victorias" value={stats.totalWins} icon="🏆" variant="success" />
@@ -144,6 +205,16 @@ export function StatsModal({ isOpen, onClose }: StatsModalProps) {
               </div>
             </div>
           </div>
+
+          {/* Logros */}
+          {stats.achievements && stats.achievements.length >= 0 && (
+            <div className="mb-6">
+              <h3 className="text-xl font-knockout font-bold text-white mb-4 uppercase tracking-wide">
+                🏆 Logros
+              </h3>
+              <AchievementsList stats={stats} />
+            </div>
+          )}
 
           {/* Historial de partidas */}
           {stats.gameHistory && stats.gameHistory.length > 0 && (
