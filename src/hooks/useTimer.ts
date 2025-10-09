@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { GameState } from './useGameState';
+
+type GameState = 'ready' | 'playing' | 'won' | 'lost';
 
 interface UseTimerReturn {
   timer: number;
