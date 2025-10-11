@@ -1,3 +1,5 @@
+import { SparklesBackground } from './SparklesBackground';
+
 export function PrizesSection() {
   const prizes = [
     {
@@ -45,20 +47,8 @@ export function PrizesSection() {
         </div>
       </div>
 
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-white rounded-full animate-pulse"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              opacity: Math.random() * 0.7 + 0.3,
-            }}
-          />
-        ))}
-      </div>
+      {/* Aquí usamos el nuevo componente que no causa errores */}
+      <SparklesBackground />
 
       <div className="relative z-10 max-w-6xl mx-auto">
         <div className="text-center mb-16">
