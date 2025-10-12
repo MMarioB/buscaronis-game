@@ -13,6 +13,7 @@ import { ExplanationModal } from '@/components/modals/ExplanationModal';
 import { GameOverModal } from '@/components/modals/GameOverModal';
 import { StatsModal } from '@/components/modals/StatsModal';
 import { AchievementUnlockedModal } from '@/components/modals/AchievementUnlockedModal';
+import { TutorialOverlay } from '@/components/game/TutorialOverlay';
 import { SoundToggle } from '@/components/ui/SoundToggle';
 import { MobileTip } from '@/components/ui/MobileTip';
 import { useBoard } from '@/hooks/useBoard';
@@ -22,6 +23,7 @@ import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { useGameState } from '@/hooks/useGameState';
 import { useGameStats } from '@/hooks/useGameStats';
 import { useSound } from '@/hooks/useSound';
+import { useTutorial } from '@/hooks/useTutorial';
 import type { Question, GameConfig, Achievement, PlayerStatsWithAchievements } from '@/lib/types';
 
 const DIFFICULTIES: Record<Difficulty, GameConfig> = {
@@ -50,6 +52,15 @@ export default function Home() {
   const { timer, resetTimer } = useTimer(gameState);
   const { stats, saveGame } = useGameStats();
   const { play: playSound } = useSound();
+  const {
+    isActive: tutorialActive,
+    currentStepData,
+    currentStep,
+    totalSteps,
+    nextStep,
+    prevStep,
+    skipTutorial,
+  } = useTutorial();
 
   // Estado local
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
@@ -315,6 +326,7 @@ export default function Home() {
           </div>
 
           <GameStats
+            className="game-stats"
             minesCount={DIFFICULTIES[difficulty].mines}
             flagsCount={flagCount}
             time={timer}
@@ -337,6 +349,7 @@ export default function Home() {
           )}
 
           <Board
+            className="game-board"
             board={board}
             onCellClick={onCellClick}
             onCellRightClick={onCellRightClick}
@@ -394,6 +407,17 @@ export default function Home() {
 
         {/* 📱 Tip móvil - Solo primera vez en móvil */}
         <MobileTip />
+
+        {/* 📚 Tutorial interactivo */}
+        <TutorialOverlay
+          isActive={tutorialActive}
+          currentStep={currentStepData}
+          stepNumber={currentStep}
+          totalSteps={totalSteps}
+          onNext={nextStep}
+          onPrev={prevStep}
+          onSkip={skipTutorial}
+        />
       </section>
 
       <Footer />
