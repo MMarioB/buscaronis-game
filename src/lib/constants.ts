@@ -23,7 +23,7 @@ export interface TutorialStep {
   id: string;
   title: string;
   description: string;
-  target?: string; // CSS selector del elemento a destacar
+  target?: string;
   position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   action?: 'click' | 'rightclick' | 'none';
   highlight?: boolean;
@@ -34,16 +34,16 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     id: 'welcome',
     title: '🥃 ¡Bienvenido a BuscaRonis!',
     description:
-      'Encuentra todos los Ronis escondidos sin tocar las minas. ¿Estás listo para desafiar el momento?',
+      'Es el clásico Buscaminas con Ron Barceló. Tu objetivo: encontrar TODAS las casillas vacías (los "Ronis" con el patito) sin tocar las minas.',
     position: 'center',
     action: 'none',
     highlight: false,
   },
   {
     id: 'board',
-    title: '🎯 El Tablero',
+    title: '🎯 ¿Qué es un Roni?',
     description:
-      'Este es tu campo de juego. Cada celda puede contener un Roni (🥃) o una mina (💥). ¡Descúbrelas con cuidado!',
+      'En el Buscaminas clásico hay casillas vacías sin minas. Aquí, esas casillas vacías tienen el patito de Ron Barceló. ¡Esos son los "Ronis" que debes encontrar!',
     target: '.game-board',
     position: 'top',
     action: 'none',
@@ -51,9 +51,9 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: 'reveal',
-    title: '👆 Click para Revelar',
+    title: '👆 Paso 1: Click Izquierdo para Explorar',
     description:
-      'Haz click en cualquier celda para revelarla. Los números indican cuántas minas hay alrededor.',
+      'Haz CLICK IZQUIERDO en las casillas. Si ves un número, indica cuántas MINAS hay alrededor. Si está VACÍA y aparece el patito, ¡encontraste un Roni!',
     target: '.game-board',
     position: 'top',
     action: 'click',
@@ -61,9 +61,9 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: 'flag',
-    title: '🏁 Click Derecho para Bandera',
+    title: '🏁 Paso 2: Click Derecho para Marcar Minas',
     description:
-      'Cuando creas que hay un Roni, haz click derecho (o mantén presionado en móvil) para poner una bandera.',
+      'Cuando sepas dónde hay una MINA (usando los números como pistas), márcala con CLICK DERECHO para poner una bandera y responder una pregunta.',
     target: '.game-board',
     position: 'top',
     action: 'rightclick',
@@ -71,18 +71,18 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: 'question',
-    title: '❓ Responde Correctamente',
+    title: '❓ Paso 3: Responde sobre Ron Barceló',
     description:
-      'Al poner una bandera, deberás responder una pregunta sobre Ron Barceló. ¡Cada respuesta correcta suma puntos!',
+      'Al marcar una mina, aparece una pregunta sobre Ron Barceló. ¡Responde bien para sumar puntos! Si te equivocas, puedes seguir jugando.',
     position: 'center',
     action: 'none',
     highlight: false,
   },
   {
     id: 'streak',
-    title: '🔥 Sistema de Rachas',
+    title: '🔥 Bonus: Rachas de Respuestas',
     description:
-      'Responde varias preguntas correctas seguidas para multiplicar tus puntos. ¡Mantén la racha!',
+      'Responde varias preguntas correctas seguidas para multiplicar tus puntos. ¡Cuantas más seguidas, más puntos!',
     target: '.game-stats',
     position: 'bottom',
     action: 'none',
@@ -90,18 +90,18 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     id: 'mines',
-    title: '💥 ¡Evita las Minas!',
+    title: '💥 ¡Cuidado: No toques las Minas!',
     description:
-      'Si tocas una mina, pierdes el juego. Usa los números como pistas para encontrar los Ronis de forma segura.',
+      'Si haces click izquierdo en una MINA, pierdes. Usa los números para saber dónde están y márcalas con bandera (click derecho).',
     position: 'center',
     action: 'none',
     highlight: false,
   },
   {
     id: 'ready',
-    title: '🎮 ¡Listo para Jugar!',
+    title: '🎮 Resumen: ¿Cómo Ganar?',
     description:
-      '¡Desafía el momento! Encuentra todos los Ronis y comparte tu puntuación. ¡Vive ahora!',
+      'GANAS cuando revelas todas las casillas con el patito (los Ronis). Marca las minas con banderas, responde preguntas sobre Ron Barceló y acumula puntos. ¡Desafía el momento!',
     position: 'center',
     action: 'none',
     highlight: false,
