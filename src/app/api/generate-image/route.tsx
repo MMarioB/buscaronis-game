@@ -11,6 +11,15 @@ export async function GET(req: NextRequest) {
     const accuracy = searchParams.get('accuracy') ?? '0';
     const difficulty = searchParams.get('difficulty') ?? 'EASY';
 
+    // Cargar las fuentes personalizadas
+    const knockoutFont = fetch(
+      new URL('../../../../public/fonts/Knockout-HTF72-FullCruiserwt.woff', import.meta.url)
+    ).then((res) => res.arrayBuffer());
+
+    const futuraFont = fetch(new URL('../../../../public/fonts/futura.woff', import.meta.url)).then(
+      (res) => res.arrayBuffer()
+    );
+
     return new ImageResponse(
       React.createElement(
         'div',
@@ -33,7 +42,15 @@ export async function GET(req: NextRequest) {
           { style: { display: 'flex', flexDirection: 'column', alignItems: 'center' } },
           React.createElement(
             'h1',
-            { style: { fontSize: '96px', fontWeight: 900, margin: 0 } },
+            {
+              style: {
+                fontFamily: 'Knockout',
+                fontSize: '96px',
+                fontWeight: 900,
+                margin: 0,
+                textShadow: '0 0 20px #FF6B9D',
+              },
+            },
             'BUSCARONIS'
           ),
           React.createElement(
@@ -60,7 +77,7 @@ export async function GET(req: NextRequest) {
           },
           React.createElement(
             'p',
-            { style: { fontSize: '120px', fontWeight: 900, margin: 0 } },
+            { style: { fontFamily: 'Knockout', fontSize: '120px', fontWeight: 900, margin: 0 } },
             score
           ),
           React.createElement(
@@ -132,6 +149,20 @@ export async function GET(req: NextRequest) {
       {
         width: 1200,
         height: 630,
+        fonts: [
+          {
+            name: 'Knockout',
+            data: await knockoutFont,
+            weight: 900,
+            style: 'normal',
+          },
+          {
+            name: 'Futura',
+            data: await futuraFont,
+            weight: 400,
+            style: 'normal',
+          },
+        ],
       }
     );
   } catch (error) {
