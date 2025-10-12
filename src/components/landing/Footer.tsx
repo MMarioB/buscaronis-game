@@ -23,7 +23,7 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
             <p className="text-white/90 font-futura text-sm sm:text-base">
               Un juego inspirado en Ron Barceló
             </p>
-            <p className="text-white/70 font-futura text-xs mt-2">Versión 1.0.0</p>
+            <p className="text-white/70 font-futura text-xs mt-2">Versión 1.2.0</p>
           </div>
 
           <div className="text-center">
