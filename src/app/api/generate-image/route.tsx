@@ -10,13 +10,12 @@ export async function GET(req: NextRequest) {
     const accuracy = searchParams.get('accuracy') ?? '0';
     const difficulty = searchParams.get('difficulty') ?? 'EASY';
 
-    // Cargar las fuentes
     const knockoutFont = fetch(
-      new URL('../../fonts/Knockout-HTF72-FullCruiserwt.woff2', import.meta.url)
+      new URL('../../../../public/fonts/Knockout-HTF72-FullCruiserwt.woff', import.meta.url)
     ).then((res) => res.arrayBuffer());
 
-    const futuraFont = fetch(new URL('../../fonts/futura.woff2', import.meta.url)).then((res) =>
-      res.arrayBuffer()
+    const futuraFont = fetch(new URL('../../../../public/fonts/futura.woff', import.meta.url)).then(
+      (res) => res.arrayBuffer()
     );
 
     return new ImageResponse(
