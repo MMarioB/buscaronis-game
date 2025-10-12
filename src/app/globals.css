@@ -27,30 +27,12 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-@font-face {
-    font-family: 'Futura';
-    src: url('/fonts/futura.woff2') format('woff2'),
-        url('/fonts/futura.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Knockout';
-    src: url('/fonts/Knockout-HTF72-FullCruiserwt.woff2') format('woff2'),
-        url('/fonts/Knockout-HTF72-FullCruiserwt.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
 .font-futura {
-    font-family: 'Futura', sans-serif;
+    font-family: var(--font-futura), sans-serif;
 }
 
 .font-knockout {
-    font-family: 'Knockout', sans-serif;
+    font-family: var(--font-knockout), sans-serif;
 }
 
 .text-desalia-blue {
