@@ -29,8 +29,8 @@ body {
 
 @font-face {
     font-family: 'Futura';
-    src: url('/fonts/futura.woff2') format('woff2'),
-        url('/fonts/futura.woff') format('woff');
+    src: url('/buscaronis-game/fonts/futura.woff2') format('woff2'),
+        url('/buscaronis-game/fonts/futura.woff') format('woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -38,8 +38,8 @@ body {
 
 @font-face {
     font-family: 'Knockout';
-    src: url('/fonts/Knockout-HTF72-FullCruiserwt.woff2') format('woff2'),
-        url('/fonts/Knockout-HTF72-FullCruiserwt.woff') format('woff');
+    src: url('/buscaronis-game/fonts/Knockout-HTF72-FullCruiserwt.woff2') format('woff2'),
+        url('/buscaronis-game/fonts/Knockout-HTF72-FullCruiserwt.woff') format('woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
