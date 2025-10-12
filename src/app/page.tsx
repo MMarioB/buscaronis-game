@@ -13,12 +13,14 @@ import { ExplanationModal } from '@/components/modals/ExplanationModal';
 import { GameOverModal } from '@/components/modals/GameOverModal';
 import { StatsModal } from '@/components/modals/StatsModal';
 import { AchievementUnlockedModal } from '@/components/modals/AchievementUnlockedModal';
+import { SoundToggle } from '@/components/ui/SoundToggle';
 import { useBoard } from '@/hooks/useBoard';
 import { useQuestions } from '@/hooks/useQuestions';
 import { useTimer } from '@/hooks/useTimer';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { useGameState } from '@/hooks/useGameState';
 import { useGameStats } from '@/hooks/useGameStats';
+import { useSound } from '@/hooks/useSound';
 import type { Question, GameConfig, Achievement, PlayerStatsWithAchievements } from '@/lib/types';
 
 const DIFFICULTIES: Record<Difficulty, GameConfig> = {
@@ -44,6 +46,7 @@ export default function Home() {
   const { getRandomQuestion, resetQuestions } = useQuestions();
   const { timer, resetTimer } = useTimer(gameState);
   const { stats, saveGame } = useGameStats();
+  const { play: playSound } = useSound(); // 🔊 Hook de sonidos
 
   // Estado local
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
@@ -71,6 +74,13 @@ export default function Home() {
       setMoves(0);
     }
   }, [isDesktop, difficulty, initBoard, resetStats, resetTimer, setGameState]);
+
+  // 🔊 Reproducir sonido de logro cuando se desbloquea
+  useEffect(() => {
+    if (newAchievement) {
+      playSound('achievement');
+    }
+  }, [newAchievement, playSound]);
 
   // Scroll suave al juego
   const scrollToGame = useCallback(() => {
@@ -109,7 +119,6 @@ export default function Home() {
 
       console.log('🎮 Resultado a guardar:', result);
 
-      // Obtener stats antes de guardar (con cast correcto)
       const persistedStats = stats as PlayerStatsWithAchievements | null;
       const statsBefore = persistedStats?.achievements?.length || 0;
 
@@ -120,12 +129,10 @@ export default function Home() {
       if (success) {
         console.log('✅ Partida guardada:', result);
 
-        // Verificar si hay nuevos logros después de un pequeño delay
         setTimeout(() => {
           const updatedStats = stats as PlayerStatsWithAchievements | null;
           const statsAfter = updatedStats?.achievements?.length || 0;
           if (statsAfter > statsBefore && updatedStats?.achievements) {
-            // Mostrar el último logro desbloqueado
             const lastAchievement = updatedStats.achievements[updatedStats.achievements.length - 1];
             console.log('🏆 Nuevo logro desbloqueado:', lastAchievement);
             setNewAchievement(lastAchievement);
@@ -178,23 +185,30 @@ export default function Home() {
         console.log('🎮 Juego iniciado - gameStartTime establecido');
       }
 
+      // 🔊 Sonido de click
+      playSound('click');
+
       const result = handleCellClick(row, col);
       setMoves((prev) => prev + 1);
 
       if (result.hitMine) {
+        // 🔊 Sonido de explosión
+        playSound('explosion');
         console.log('💥 Mina tocada - llamando saveGameResult(false)');
         setGameState('lost');
         setExplodedCell({ row, col });
         saveGameResult(false);
         setShowGameOver(true);
       } else if (result.won) {
+        // 🔊 Sonido de victoria
+        playSound('victory');
         console.log('🎉 Juego ganado - llamando saveGameResult(true)');
         setGameState('won');
         saveGameResult(true);
         setShowGameOver(true);
       }
     },
-    [gameState, handleCellClick, setGameState, saveGameResult]
+    [gameState, handleCellClick, setGameState, saveGameResult, playSound]
   );
 
   // Manejar click derecho (bandera con pregunta)
@@ -231,16 +245,29 @@ export default function Home() {
       setLastCorrectAnswer(currentQuestion.options[currentQuestion.correct]);
 
       if (isCorrect) {
+        // 🔊 Sonido de respuesta correcta
+        playSound('correct');
         addCorrectAnswer();
         handleCellRightClick(pendingFlag.row, pendingFlag.col);
+        // 🔊 Sonido de bandera colocada
+        setTimeout(() => playSound('flag'), 300);
       } else {
+        // 🔊 Sonido de respuesta incorrecta
+        playSound('incorrect');
         addIncorrectAnswer();
       }
 
       setCurrentQuestion(null);
       setShowExplanation(true);
     },
-    [currentQuestion, pendingFlag, addCorrectAnswer, addIncorrectAnswer, handleCellRightClick]
+    [
+      currentQuestion,
+      pendingFlag,
+      addCorrectAnswer,
+      addIncorrectAnswer,
+      handleCellRightClick,
+      playSound,
+    ]
   );
 
   // Cerrar modal de pregunta sin responder
@@ -285,15 +312,10 @@ export default function Home() {
         id="game-section"
         className="min-h-screen animated-gradient p-4 sm:p-6 overflow-x-hidden relative"
       >
-        {/* Noise texture */}
         <div className="noise-bg absolute inset-0 pointer-events-none"></div>
-
-        {/* Vignette effect */}
         <div className="vignette absolute inset-0 pointer-events-none"></div>
 
-        {/* Content */}
         <div className="relative z-10">
-          {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
             <h1 className="font-knockout text-5xl sm:text-6xl md:text-7xl font-black uppercase mb-3 text-white drop-shadow-2xl tracking-wider">
               ¡DESAFÍA EL MOMENTO!
@@ -303,14 +325,12 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Game Stats */}
           <GameStats
             minesCount={DIFFICULTIES[difficulty].mines}
             flagsCount={flagCount}
             time={timer}
           />
 
-          {/* Game Controls */}
           <GameControls
             currentDifficulty={difficulty}
             onDifficultyChange={handleDifficultyChange}
@@ -318,7 +338,6 @@ export default function Home() {
             isDesktop={isDesktop}
           />
 
-          {/* Tip for mobile */}
           {!isDesktop && (
             <div className="text-center font-futura text-white/80 text-sm mb-4 px-4 bg-white/10 backdrop-blur-sm py-3 rounded-xl mx-auto max-w-md border border-white/20">
               💡 <span className="font-semibold">Tip:</span> Modo Vive Ahora solo disponible en
@@ -326,7 +345,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Board */}
           <Board
             board={board}
             onCellClick={onCellClick}
@@ -334,6 +352,9 @@ export default function Home() {
             gameOver={gameState === 'won' || gameState === 'lost'}
             explodedCell={explodedCell}
           />
+
+          {/* 🔊 Botón de toggle de sonido - Fixed position */}
+          <SoundToggle className="fixed bottom-6 left-6 z-50" />
 
           {/* Floating Stats Button */}
           <button
@@ -345,7 +366,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Modals */}
         <QuestionModal
           isOpen={currentQuestion !== null}
           question={currentQuestion || { question: '', options: [], correct: 0 }}
@@ -374,14 +394,12 @@ export default function Home() {
 
         <StatsModal isOpen={showStats} stats={globalStats} onClose={() => setShowStats(false)} />
 
-        {/* Modal de logro desbloqueado */}
         <AchievementUnlockedModal
           achievement={newAchievement}
           onClose={() => setNewAchievement(null)}
         />
       </section>
 
-      {/* Footer */}
       <Footer />
     </>
   );
