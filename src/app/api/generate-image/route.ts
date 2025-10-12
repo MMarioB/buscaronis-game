@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
 
-export const runtime = 'nodejs'; // Asegura que use Node.js runtime
+export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     const knockoutFontData = await fs.readFile(knockoutPath);
     const futuraFontData = await fs.readFile(futuraPath);
 
-    // 2. Obtener los parámetros de la URL (App Router usa searchParams)
+    // 2. Obtener los parámetros de la URL
     const { searchParams } = new URL(req.url);
     const score = searchParams.get('score') ?? '0';
     const accuracy = searchParams.get('accuracy') ?? '0';
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 6. Retornar la respuesta con NextResponse
-    return new NextResponse(pngBuffer, {
+    return new NextResponse(pngBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'image/png',
