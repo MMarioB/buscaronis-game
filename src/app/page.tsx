@@ -14,6 +14,7 @@ import { GameOverModal } from '@/components/modals/GameOverModal';
 import { StatsModal } from '@/components/modals/StatsModal';
 import { AchievementUnlockedModal } from '@/components/modals/AchievementUnlockedModal';
 import { SoundToggle } from '@/components/ui/SoundToggle';
+import { MobileTip } from '@/components/ui/MobileTip';
 import { useBoard } from '@/hooks/useBoard';
 import { useQuestions } from '@/hooks/useQuestions';
 import { useTimer } from '@/hooks/useTimer';
@@ -46,7 +47,7 @@ export default function Home() {
   const { getRandomQuestion, resetQuestions } = useQuestions();
   const { timer, resetTimer } = useTimer(gameState);
   const { stats, saveGame } = useGameStats();
-  const { play: playSound } = useSound(); // 🔊 Hook de sonidos
+  const { play: playSound } = useSound();
 
   // Estado local
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
@@ -185,14 +186,12 @@ export default function Home() {
         console.log('🎮 Juego iniciado - gameStartTime establecido');
       }
 
-      // 🔊 Sonido de click
       playSound('click');
 
       const result = handleCellClick(row, col);
       setMoves((prev) => prev + 1);
 
       if (result.hitMine) {
-        // 🔊 Sonido de explosión
         playSound('explosion');
         console.log('💥 Mina tocada - llamando saveGameResult(false)');
         setGameState('lost');
@@ -200,7 +199,6 @@ export default function Home() {
         saveGameResult(false);
         setShowGameOver(true);
       } else if (result.won) {
-        // 🔊 Sonido de victoria
         playSound('victory');
         console.log('🎉 Juego ganado - llamando saveGameResult(true)');
         setGameState('won');
@@ -219,13 +217,11 @@ export default function Home() {
 
         if (gameState === 'won' || gameState === 'lost' || gameState === 'ready') return;
 
-        // Si la celda ya tiene bandera, quitarla sin pregunta
         if (board[row]?.[col]?.isFlagged) {
           handleCellRightClick(row, col);
           return;
         }
 
-        // Si quiere poner bandera, mostrar pregunta
         if (!board[row]?.[col]?.isRevealed) {
           setPendingFlag({ row, col });
           setCurrentQuestion(getRandomQuestion());
@@ -245,14 +241,11 @@ export default function Home() {
       setLastCorrectAnswer(currentQuestion.options[currentQuestion.correct]);
 
       if (isCorrect) {
-        // 🔊 Sonido de respuesta correcta
         playSound('correct');
         addCorrectAnswer();
         handleCellRightClick(pendingFlag.row, pendingFlag.col);
-        // 🔊 Sonido de bandera colocada
         setTimeout(() => playSound('flag'), 300);
       } else {
-        // 🔊 Sonido de respuesta incorrecta
         playSound('incorrect');
         addIncorrectAnswer();
       }
@@ -298,16 +291,10 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero Section */}
       <Hero onPlayClick={scrollToGame} />
-
-      {/* How to Play Section */}
       <HowToPlay />
-
-      {/* Prizes Section */}
       <PrizesSection />
 
-      {/* Game Section */}
       <section
         id="game-section"
         className="min-h-screen animated-gradient p-4 sm:p-6 overflow-x-hidden relative"
@@ -353,10 +340,8 @@ export default function Home() {
             explodedCell={explodedCell}
           />
 
-          {/* 🔊 Botón de toggle de sonido - Fixed position */}
           <SoundToggle className="fixed bottom-6 left-6 z-50" />
 
-          {/* Floating Stats Button */}
           <button
             onClick={() => setShowStats(true)}
             className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-[#FF6B9D] to-[#FF8FB3] hover:from-[#FF8FB3] hover:to-[#FFA5C3] rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/30 backdrop-blur-sm z-50"
@@ -398,6 +383,9 @@ export default function Home() {
           achievement={newAchievement}
           onClose={() => setNewAchievement(null)}
         />
+
+        {/* 📱 Tip móvil - Solo primera vez en móvil */}
+        <MobileTip />
       </section>
 
       <Footer />
