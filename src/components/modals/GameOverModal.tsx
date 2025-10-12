@@ -32,8 +32,7 @@ export function GameOverModal({
   const shareConfig: ShareConfig = {
     score: correctAnswers * 10, // o el score real si lo tienes
     accuracy,
-    difficulty: 'easy', // TODO: esto debería venir como prop
-    timeElapsed: time,
+    difficulty: 'easy',
   };
 
   return (
