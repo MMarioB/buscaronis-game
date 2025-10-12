@@ -1,100 +1,90 @@
-import { useState, useEffect } from 'react';
+'use client';
 
-export type TutorialStep =
-  | 'welcome'
-  | 'first-click'
-  | 'explain-number'
-  | 'try-flag'
-  | 'answer-question'
-  | 'complete'
-  | null;
+import { useState, useEffect, useCallback } from 'react';
+import { TUTORIAL_STEPS, STORAGE_KEYS } from '@/lib/constants';
 
-interface UseTutorialReturn {
-  isActive: boolean;
-  currentStep: TutorialStep;
-  startTutorial: () => void;
-  nextStep: () => void;
-  skipTutorial: () => void;
-  markTutorialComplete: () => void;
-  shouldShowOverlay: boolean;
-  tutorialMessage: string;
-}
-
-const TUTORIAL_STEPS: TutorialStep[] = [
-  'welcome',
-  'first-click',
-  'explain-number',
-  'try-flag',
-  'answer-question',
-  'complete',
-];
-
-const TUTORIAL_MESSAGES: Record<Exclude<TutorialStep, null>, string> = {
-  welcome: '¡Bienvenido a Buscaronis! Te enseñaremos a jugar en 1 minuto.',
-  'first-click': 'Haz click en cualquier celda del tablero para revelarla.',
-  'explain-number':
-    '¡Genial! Los números indican cuántas minas hay alrededor. El Roni 🦆 significa celda segura (0 minas cerca).',
-  'try-flag': 'Ahora mantén presionado (o click derecho) en una celda para plantar una bandera 🏁',
-  'answer-question':
-    '¡Perfecto! Para plantar la bandera, responde esta pregunta sobre Ron Barceló 🍹',
-  complete: '¡Excelente! Ya sabes jugar. Encuentra todos los Ronis sin tocar las minas 💥',
-};
-
-const TUTORIAL_STORAGE_KEY = 'buscaronis-tutorial-completed';
-
-export function useTutorial(): UseTutorialReturn {
+export function useTutorial() {
   const [isActive, setIsActive] = useState(false);
-  const [currentStep, setCurrentStep] = useState<TutorialStep>(null);
-  const [stepIndex, setStepIndex] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [hasCompletedTutorial, setHasCompletedTutorial] = useState(true);
 
+  // Verificar si ya completó el tutorial
   useEffect(() => {
-    // Verificar si el usuario ya completó el tutorial
-    const completed = localStorage.getItem(TUTORIAL_STORAGE_KEY);
-    if (!completed) {
-      // Primera vez: activar tutorial automáticamente
-      startTutorial();
+    if (typeof window !== 'undefined') {
+      const completed = localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED);
+      const hasCompleted = completed === 'true';
+      setHasCompletedTutorial(hasCompleted);
+
+      // Si no ha completado, iniciar tutorial automáticamente
+      if (!hasCompleted) {
+        setTimeout(() => {
+          setIsActive(true);
+        }, 1000); // Esperar 1 segundo antes de mostrar
+      }
     }
   }, []);
 
-  const startTutorial = () => {
+  // Iniciar tutorial manualmente
+  const startTutorial = useCallback(() => {
+    setCurrentStep(0);
     setIsActive(true);
-    setStepIndex(0);
-    setCurrentStep(TUTORIAL_STEPS[0]);
-  };
+  }, []);
 
-  const nextStep = () => {
-    const nextIndex = stepIndex + 1;
-    if (nextIndex >= TUTORIAL_STEPS.length) {
-      markTutorialComplete();
-      return;
+  // Siguiente paso
+  const nextStep = useCallback(() => {
+    if (currentStep < TUTORIAL_STEPS.length - 1) {
+      setCurrentStep((prev) => prev + 1);
+    } else {
+      completeTutorial();
     }
-    setStepIndex(nextIndex);
-    setCurrentStep(TUTORIAL_STEPS[nextIndex]);
-  };
+  }, [currentStep]);
 
-  const skipTutorial = () => {
+  // Paso anterior
+  const prevStep = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep((prev) => prev - 1);
+    }
+  }, [currentStep]);
+
+  // Saltar tutorial
+  const skipTutorial = useCallback(() => {
     setIsActive(false);
-    setCurrentStep(null);
-    localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true');
-  };
+    setCurrentStep(0);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.TUTORIAL_COMPLETED, 'true');
+      setHasCompletedTutorial(true);
+    }
+  }, []);
 
-  const markTutorialComplete = () => {
+  // Completar tutorial
+  const completeTutorial = useCallback(() => {
     setIsActive(false);
-    setCurrentStep(null);
-    localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true');
-  };
+    setCurrentStep(0);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.TUTORIAL_COMPLETED, 'true');
+      setHasCompletedTutorial(true);
+    }
+  }, []);
 
-  const shouldShowOverlay = isActive && currentStep !== null && currentStep !== 'complete';
-  const tutorialMessage = currentStep ? TUTORIAL_MESSAGES[currentStep] : '';
+  // Reset tutorial (para testing)
+  const resetTutorial = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEYS.TUTORIAL_COMPLETED);
+      setHasCompletedTutorial(false);
+    }
+  }, []);
 
   return {
     isActive,
     currentStep,
+    currentStepData: TUTORIAL_STEPS[currentStep],
+    totalSteps: TUTORIAL_STEPS.length,
+    hasCompletedTutorial,
     startTutorial,
     nextStep,
+    prevStep,
     skipTutorial,
-    markTutorialComplete,
-    shouldShowOverlay,
-    tutorialMessage,
+    completeTutorial,
+    resetTutorial,
   };
 }

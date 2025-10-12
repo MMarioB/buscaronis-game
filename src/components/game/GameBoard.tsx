@@ -13,6 +13,7 @@ interface BoardProps {
   onCellRightClick: (row: number, col: number) => (e: React.MouseEvent<HTMLDivElement>) => void;
   gameOver: boolean;
   explodedCell?: { row: number; col: number } | null;
+  className?: string; // ← Agregado para el tutorial
 }
 
 export function Board({
@@ -21,6 +22,7 @@ export function Board({
   onCellRightClick,
   gameOver,
   explodedCell,
+  className = '', // ← Agregado para el tutorial
 }: BoardProps) {
   const rows = board.length;
   const cols = board[0]?.length || 0;
@@ -48,7 +50,9 @@ export function Board({
   };
 
   return (
-    <div className="flex items-center justify-center p-2 sm:p-4 w-full overflow-x-auto">
+    <div
+      className={`flex items-center justify-center p-2 sm:p-4 w-full overflow-x-auto ${className}`}
+    >
       <div
         className={`inline-grid ${getSpacingClasses()} bg-gradient-to-br from-[#FF6B35]/40 via-[#FF8C42]/30 to-[#FFA55F]/40 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-[#FF6B35]/50 relative noise-bg`}
         style={{

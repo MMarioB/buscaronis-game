@@ -4,14 +4,24 @@ interface GameStatsProps {
   time: number;
   streak?: number;
   bestStreak?: number;
+  className?: string;
 }
 
-export function GameStats({ minesCount, flagsCount, time, streak, bestStreak }: GameStatsProps) {
+export function GameStats({
+  minesCount,
+  flagsCount,
+  time,
+  streak,
+  bestStreak,
+  className = '',
+}: GameStatsProps) {
   const showStreak = streak !== undefined && streak > 0;
   const showBestStreak = bestStreak !== undefined && bestStreak > 0;
 
   return (
-    <div className="flex flex-wrap gap-4 sm:gap-6 items-center justify-center bg-gradient-to-r from-[#FF6B35]/30 via-[#FF8C42]/40 to-[#FF6B35]/30 backdrop-blur-lg px-6 sm:px-10 py-4 sm:py-5 rounded-3xl shadow-2xl border-2 border-[#FFC857]/40 mb-6 relative noise-bg">
+    <div
+      className={`flex flex-wrap gap-4 sm:gap-6 items-center justify-center bg-gradient-to-r from-[#FF6B35]/30 via-[#FF8C42]/40 to-[#FF6B35]/30 backdrop-blur-lg px-6 sm:px-10 py-4 sm:py-5 rounded-3xl shadow-2xl border-2 border-[#FFC857]/40 mb-6 relative noise-bg ${className}`}
+    >
       <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-transparent via-white/5 to-white/10 pointer-events-none"></div>
 
       <div className="relative z-10 flex flex-wrap gap-4 sm:gap-6 items-center justify-center w-full">
