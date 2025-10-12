@@ -1,47 +1,39 @@
 'use client';
-
 import { useState } from 'react';
 
-/**
- * Define un logro desbloqueado. Adáptalo a tu estructura real.
- */
 export interface Achievement {
   id: string;
   name: string;
   emoji: string;
 }
 
-/**
- * Configuración con los datos a mostrar en la imagen y texto compartidos.
- */
 export interface ShareConfig {
   score: number;
   accuracy: number;
   difficulty: string;
-  timeElapsed: number;
   unlockedAchievements?: Achievement[];
   appUrl?: string;
+  logoUrl?: string;
 }
 
 const IMAGE_WIDTH = 1200;
 const IMAGE_HEIGHT = 630;
 
-/**
- * Centraliza toda la configuración de estilos para la imagen generada.
- * Facilita cambios de diseño y mantiene la consistencia.
- */
 const STYLE_CONFIG = {
   background: {
-    gradient: ['#F99B2A', '#E65C00', '#F39C12'],
-    textureColor: 'rgba(255, 255, 255, 0.04)',
+    gradient: ['#F99B2A', '#E65C00'],
+    bubbleColors: [
+      'rgba(255, 255, 255, 0.03)',
+      'rgba(255, 255, 255, 0.05)',
+      'rgba(255, 255, 255, 0.08)',
+    ],
     vignetteColor: 'rgba(0, 0, 0, 0.4)',
-    lightRayColor: 'rgba(255, 255, 255, 0.08)',
   },
   header: {
     font: '900 80px var(--font-knockout), system-ui, sans-serif',
-    color: '#FFFFFF',
-    shadow: 'rgba(0, 0, 0, 0.5)',
-    stroke: 'rgba(0,0,0,0.2)',
+    gradient: ['#FFFFFF', '#FFDDC4'],
+    shadow: 'rgba(0, 0, 0, 0.4)',
+    stroke: 'rgba(0,0,0,0.25)',
   },
   subheader: {
     font: '40px var(--font-futura), system-ui, sans-serif',
@@ -49,35 +41,32 @@ const STYLE_CONFIG = {
   },
   score: {
     font: '900 150px var(--font-knockout), system-ui, sans-serif',
-    color: '#FF6B35',
+    color: '#FFFFFF',
     labelFont: 'bold 36px var(--font-futura), system-ui, sans-serif',
-    labelColor: '#FF8C42',
-    circleGradient: ['#FFFFFF', '#EAEAEA'],
-    circleShadow: 'rgba(0, 0, 0, 0.35)',
-    innerShadow: 'rgba(0, 0, 0, 0.2)',
-    shineColor: 'rgba(255, 255, 255, 0.5)',
+    labelColor: 'rgba(255, 255, 255, 0.8)',
+    circleGradient: ['#EE7752', '#E73C7E'],
+    circleBezelColor: 'rgba(255, 255, 255, 0.5)',
+    innerShadow: 'rgba(0, 0, 0, 0.4)',
+    shineColor: 'rgba(255, 255, 255, 0.6)',
   },
   badges: {
     font: 'bold 42px var(--font-futura), system-ui, sans-serif',
-    color: '#E65C00',
+    color: '#FFFFFF',
     difficultyFont: 'bold 38px var(--font-futura), system-ui, sans-serif',
     iconFont: '52px system-ui, -apple-system, sans-serif',
-    backgroundColor: 'rgba(255, 255, 255, 1)',
-    shadow: 'rgba(0, 0, 0, 0.3)',
-    stroke: 'rgba(255, 255, 255, 0.5)',
+    backgroundGradient: ['#FF8C42', '#FF6B35'],
+    shadow: 'rgba(0, 0, 0, 0.25)',
+    innerStroke: 'rgba(255, 255, 255, 0.2)',
   },
   footer: {
     font: 'bold 36px var(--font-futura), system-ui, sans-serif',
     color: 'rgba(255, 255, 255, 0.95)',
     shadow: 'rgba(0, 0, 0, 0.5)',
   },
-  decorations: {
-    confettiColors: ['#FFFFFF', '#FFD700', '#FFA500'],
-  },
 };
 
 /**
- * Dibuja un rectángulo con esquinas redondeadas.
+ * Dibuja un rectángulo con esquinas redondeadas. (Sin cambios)
  */
 function roundRect(
   ctx: CanvasRenderingContext2D,
@@ -100,9 +89,16 @@ function roundRect(
   ctx.closePath();
 }
 
-/**
- * Dibuja el fondo con gradiente, rayos de luz y viñeta.
- */
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
 function drawBackground(ctx: CanvasRenderingContext2D) {
   const { width, height } = ctx.canvas;
   const { background } = STYLE_CONFIG;
@@ -110,67 +106,64 @@ function drawBackground(ctx: CanvasRenderingContext2D) {
   // Gradiente principal
   const gradient = ctx.createLinearGradient(0, 0, width, height);
   gradient.addColorStop(0, background.gradient[0]);
-  gradient.addColorStop(0.5, background.gradient[1]);
-  gradient.addColorStop(1, background.gradient[2]);
+  gradient.addColorStop(1, background.gradient[1]);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
-  // Rayos de luz sutiles desde el centro
-  const centerX = width / 2;
-  const centerY = height / 2;
-  ctx.save();
-  ctx.globalCompositeOperation = 'overlay';
-  for (let i = 0; i < 12; i++) {
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    const angle = (i / 12) * Math.PI * 2;
-    const x1 = centerX + Math.cos(angle) * width * 1.5;
-    const y1 = centerY + Math.sin(angle) * width * 1.5;
-    const x2 = centerX + Math.cos(angle + 0.1) * width * 1.5;
-    const y2 = centerY + Math.sin(angle + 0.1) * width * 1.5;
-    ctx.lineTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.closePath();
-    ctx.fillStyle = background.lightRayColor;
-    ctx.fill();
-  }
-  ctx.restore();
+  // Burbujas para dar profundidad y dinamismo
+  for (let i = 0; i < 40; i++) {
+    const x = Math.random() * width;
+    const y = Math.random() * height;
+    const radius = Math.random() * 80 + 20;
+    const color =
+      background.bubbleColors[Math.floor(Math.random() * background.bubbleColors.length)];
 
-  // Viñeta para dar profundidad
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.filter = `blur(${Math.random() * 10 + 5}px)`; // desenfoque para efecto bokeh
+    ctx.fill();
+    ctx.filter = 'none';
+  }
+
+  // Viñeta
   const radial = ctx.createRadialGradient(
     width / 2,
     height / 2,
     0,
     width / 2,
     height / 2,
-    width * 0.8
+    width * 0.7
   );
-  radial.addColorStop(0.4, 'rgba(0,0,0,0)');
+  radial.addColorStop(0.5, 'rgba(0,0,0,0)');
   radial.addColorStop(1, background.vignetteColor);
   ctx.fillStyle = radial;
   ctx.fillRect(0, 0, width, height);
 }
 
-/**
- * Dibuja el header principal y el subtítulo.
- */
 function drawHeader(ctx: CanvasRenderingContext2D) {
   const { width } = ctx.canvas;
   const { header, subheader } = STYLE_CONFIG;
+  const headerY = 100;
 
   ctx.save();
   ctx.font = header.font;
   ctx.textAlign = 'center';
-  ctx.fillStyle = header.color;
-  ctx.shadowColor = header.shadow;
-  ctx.shadowBlur = 25;
-  ctx.shadowOffsetY = 8;
 
-  // Contorno sutil para legibilidad
+  // Gradiente para el texto
+  const textGradient = ctx.createLinearGradient(0, headerY - 80, 0, headerY);
+  textGradient.addColorStop(0, header.gradient[0]);
+  textGradient.addColorStop(1, header.gradient[1]);
+  ctx.fillStyle = textGradient;
+
+  ctx.shadowColor = header.shadow;
+  ctx.shadowBlur = 15;
+  ctx.shadowOffsetY = 5;
+
   ctx.strokeStyle = header.stroke;
-  ctx.lineWidth = 4;
-  ctx.strokeText('🍹 BUSCARONIS', width / 2, 100);
-  ctx.fillText('🍹 BUSCARONIS', width / 2, 100);
+  ctx.lineWidth = 2;
+  ctx.strokeText('🍹 BUSCARONIS', width / 2, headerY);
+  ctx.fillText('🍹 BUSCARONIS', width / 2, headerY);
   ctx.restore();
 
   ctx.save();
@@ -181,96 +174,76 @@ function drawHeader(ctx: CanvasRenderingContext2D) {
   ctx.restore();
 }
 
-/**
- * Dibuja el círculo central con la puntuación con efecto 3D/metálico.
- */
 function drawScoreCircle(ctx: CanvasRenderingContext2D, score: number) {
   const { width } = ctx.canvas;
-  const { score: scoreStyle } = STYLE_CONFIG;
+  const { score: style } = STYLE_CONFIG;
   const centerX = width / 2;
   const centerY = 330;
   const radius = 150;
 
   // Sombra proyectada del círculo
   ctx.save();
-  ctx.filter = 'blur(15px)';
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
   ctx.beginPath();
-  ctx.arc(centerX + 10, centerY + 15, radius, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.fillStyle = 'black';
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 30;
+  ctx.shadowOffsetY = 15;
   ctx.fill();
   ctx.restore();
 
-  // Círculo principal
-  ctx.save();
-  const circleGradient = ctx.createRadialGradient(
-    centerX,
-    centerY,
-    radius * 0.8,
-    centerX,
-    centerY,
-    radius
-  );
-  circleGradient.addColorStop(0, scoreStyle.circleGradient[0]);
-  circleGradient.addColorStop(1, scoreStyle.circleGradient[1]);
-  ctx.fillStyle = circleGradient;
+  // Cuerpo del círculo con gradiente
+  const circleGrad = ctx.createLinearGradient(centerX, centerY - radius, centerX, centerY + radius);
+  circleGrad.addColorStop(0, style.circleGradient[1]);
+  circleGrad.addColorStop(1, style.circleGradient[0]);
+  ctx.fillStyle = circleGrad;
   ctx.beginPath();
   ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
   ctx.fill();
-  ctx.restore();
 
-  // Sombra interior para efecto de profundidad
+  // Borde (bisel) para dar efecto 3D
+  ctx.strokeStyle = style.circleBezelColor;
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Sombra interior
   ctx.save();
-  ctx.strokeStyle = scoreStyle.innerShadow;
-  ctx.lineWidth = 10;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius - 5, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.shadowColor = scoreStyle.innerShadow;
-  ctx.shadowBlur = 15;
-  ctx.shadowOffsetX = 5;
-  ctx.shadowOffsetY = 5;
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.clip(); // Limita el dibujo al interior del círculo
+  ctx.shadowColor = style.innerShadow;
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 10;
+  ctx.shadowOffsetY = 10;
   ctx.stroke();
   ctx.restore();
 
-  // Efecto de brillo/reflejo en la parte superior
+  // Reflejo superior
   ctx.save();
-  const shineGradient = ctx.createLinearGradient(
-    centerX - radius,
-    centerY - radius,
-    centerX,
-    centerY
-  );
-  shineGradient.addColorStop(0, scoreStyle.shineColor);
-  shineGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = shineGradient;
+  const shineGrad = ctx.createLinearGradient(0, centerY - radius, 0, centerY);
+  shineGrad.addColorStop(0, style.shineColor);
+  shineGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = shineGrad;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, -Math.PI * 0.6, -Math.PI * 0.1);
+  ctx.arc(centerX, centerY, radius - 3, Math.PI * 1.1, Math.PI * 1.9);
   ctx.fill();
   ctx.restore();
 
-  // Texto de la puntuación
-  ctx.save();
-  ctx.fillStyle = scoreStyle.color;
-  ctx.font = scoreStyle.font;
+  // Texto de puntuación
+  ctx.fillStyle = style.color;
+  ctx.font = style.font;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-  ctx.shadowBlur = 5;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+  ctx.shadowBlur = 10;
   ctx.fillText(score.toString(), centerX, centerY - 10);
-  ctx.restore();
 
   // Etiqueta "PUNTOS"
-  ctx.save();
-  ctx.fillStyle = scoreStyle.labelColor;
-  ctx.font = scoreStyle.labelFont;
-  ctx.textAlign = 'center';
+  ctx.fillStyle = style.labelColor;
+  ctx.font = style.labelFont;
   ctx.fillText('PUNTOS', centerX, centerY + 70);
-  ctx.restore();
 }
 
-/**
- * Dibuja un badge de estadística (Precisión o Dificultad).
- */
 function drawStatBadge(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -279,133 +252,112 @@ function drawStatBadge(
   text: string,
   isDifficulty = false
 ) {
-  const { badges } = STYLE_CONFIG;
+  const { badges: style } = STYLE_CONFIG;
   const width = 250;
   const height = 85;
-  const radius = 25;
+  const radius = 42.5; // Totalmente redondeado
 
-  // Fondo del badge con sombra
   ctx.save();
-  ctx.fillStyle = badges.backgroundColor;
-  ctx.shadowColor = badges.shadow;
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 8;
+  // Sombra del badge
+  ctx.shadowColor = style.shadow;
+  ctx.shadowBlur = 15;
+  ctx.shadowOffsetY = 5;
+
+  // Fondo con gradiente
+  const badgeGrad = ctx.createLinearGradient(x - width / 2, y, x + width / 2, y);
+  badgeGrad.addColorStop(0, style.backgroundGradient[0]);
+  badgeGrad.addColorStop(1, style.backgroundGradient[1]);
+  ctx.fillStyle = badgeGrad;
+
   roundRect(ctx, x - width / 2, y - height / 2, width, height, radius);
   ctx.fill();
-  ctx.restore();
+  ctx.shadowColor = 'transparent'; // Resetear sombra para el borde
 
-  // Borde sutil
-  ctx.save();
-  ctx.strokeStyle = badges.stroke;
+  // Borde interior sutil
+  ctx.strokeStyle = style.innerStroke;
   ctx.lineWidth = 3;
-  roundRect(ctx, x - width / 2, y - height / 2, width, height, radius);
   ctx.stroke();
   ctx.restore();
 
-  // Icono
-  ctx.save();
-  ctx.font = badges.iconFont;
+  // Contenido (Icono y Texto)
+  const iconX = x - 65;
+  const textX = x + 20;
+
+  ctx.font = style.iconFont;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(icon, x - (isDifficulty ? 60 : 70), y);
-  ctx.restore();
+  ctx.fillStyle = style.color;
+  ctx.fillText(icon, iconX, y);
 
-  // Texto
-  ctx.save();
-  ctx.fillStyle = badges.color;
-  ctx.font = isDifficulty ? badges.difficultyFont : badges.font;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, x + 25, y);
-  ctx.restore();
+  ctx.font = isDifficulty ? style.difficultyFont : style.font;
+  ctx.fillText(text, textX, y);
 }
 
-/**
- * Dibuja elementos decorativos como confeti.
- */
-function drawDecorations(ctx: CanvasRenderingContext2D) {
-  const { width, height } = ctx.canvas;
-  const { confettiColors } = STYLE_CONFIG.decorations;
-
-  ctx.save();
-  for (let i = 0; i < 50; i++) {
-    const x = Math.random() * width;
-    const y = Math.random() * height * 0.8;
-    const size = Math.random() * 15 + 5;
-    ctx.fillStyle = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-    ctx.globalAlpha = Math.random() * 0.7 + 0.3;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-/**
- * Dibuja el footer con la llamada a la acción.
- */
-function drawFooter(ctx: CanvasRenderingContext2D) {
+async function drawFooter(ctx: CanvasRenderingContext2D, logoUrl?: string) {
   const { width, height } = ctx.canvas;
   const { footer } = STYLE_CONFIG;
+
+  if (logoUrl) {
+    try {
+      const logo = await loadImage(logoUrl);
+      const logoHeight = 40;
+      const logoWidth = (logo.width / logo.height) * logoHeight;
+      ctx.drawImage(logo, width / 2 - logoWidth / 2, height - 100, logoWidth, logoHeight);
+    } catch (error) {
+      console.error('No se pudo cargar el logo:', error);
+    }
+  }
 
   ctx.save();
   ctx.fillStyle = footer.color;
   ctx.font = footer.font;
   ctx.textAlign = 'center';
   ctx.shadowColor = footer.shadow;
-  ctx.shadowBlur = 15;
+  ctx.shadowBlur = 10;
   ctx.shadowOffsetY = 4;
   ctx.fillText('¿PUEDES SUPERARME? 🏆', width / 2, height - 40);
   ctx.restore();
 }
 
-/**
- * Genera una imagen ÉPICA para compartir (1200x630px) usando Canvas.
- * @param config - Datos del resultado de la partida.
- * @returns Una promesa que resuelve con la URL de la imagen generada (blob URL).
- */
 function generateShareImage(config: ShareConfig): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
-      // Espera a que las fuentes personalizadas estén listas para ser usadas.
       await document.fonts.ready;
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-
-      if (!ctx) {
-        throw new Error('No se pudo obtener el contexto 2D del canvas.');
-      }
+      if (!ctx) throw new Error('No se pudo obtener el contexto 2D.');
 
       canvas.width = IMAGE_WIDTH;
       canvas.height = IMAGE_HEIGHT;
 
       // Secuencia de dibujado
       drawBackground(ctx);
-      drawDecorations(ctx);
       drawHeader(ctx);
       drawScoreCircle(ctx, config.score);
-      drawFooter(ctx);
 
-      const badgeY = 500;
+      const badgeY = 515;
       const badgeSpacing = 380;
-      const accuracyX = canvas.width / 2 - badgeSpacing / 2;
-      const difficultyX = canvas.width / 2 + badgeSpacing / 2;
+      drawStatBadge(ctx, IMAGE_WIDTH / 2 - badgeSpacing / 2, badgeY, '🎯', `${config.accuracy}%`);
+      drawStatBadge(
+        ctx,
+        IMAGE_WIDTH / 2 + badgeSpacing / 2,
+        badgeY,
+        '⚡️',
+        config.difficulty.toUpperCase(),
+        true
+      );
 
-      drawStatBadge(ctx, accuracyX, badgeY, '🎯', `${config.accuracy}%`);
-      drawStatBadge(ctx, difficultyX, badgeY, '⚡', config.difficulty.toUpperCase(), true);
+      // El footer ahora es asíncrono por la carga del logo
+      await drawFooter(ctx, config.logoUrl);
 
-      // Convertir canvas a Blob y crear URL
       canvas.toBlob(
         (blob) => {
-          if (blob) {
-            resolve(URL.createObjectURL(blob));
-          } else {
-            reject(new Error('La creación del blob de la imagen falló.'));
-          }
+          if (blob) resolve(URL.createObjectURL(blob));
+          else reject(new Error('La creación del blob falló.'));
         },
         'image/png',
-        1.0 // Calidad máxima
+        0.95 // Un poco de compresión casi no se nota y reduce el tamaño del archivo
       );
     } catch (error) {
       reject(error);
@@ -413,74 +365,46 @@ function generateShareImage(config: ShareConfig): Promise<string> {
   });
 }
 
-/**
- * Genera el texto formateado para compartir en redes sociales.
- * @param config - Datos del resultado de la partida.
- * @returns El texto listo para compartir.
- */
 function generateShareText(config: ShareConfig): string {
-  const { score, accuracy, difficulty, unlockedAchievements } = config;
+  const { score, accuracy, difficulty } = config;
 
   let text = `🏆 ¡He conseguido ${score} puntos en BuscaRonis!\n\n`;
   text += `🎯 Precisión: ${accuracy}%\n`;
-  text += `⚡ Dificultad: ${difficulty.toUpperCase()}\n`;
-
-  if (unlockedAchievements && unlockedAchievements.length > 0) {
-    text += `\n🏅 Logros desbloqueados: ${unlockedAchievements.length}\n`;
-  }
-
-  text += `\n¿Puedes superarme? ¡Juega ahora! 🍹\n`;
+  text += `⚡ Dificultad: ${difficulty.toUpperCase()}\n\n`;
+  text += `¿Puedes superarme? ¡Juega ahora! 🍹\n`;
   text += `\n#Desalía #RonBarceló #BuscaRonis`;
 
   return text;
 }
 
-/**
- * Hook personalizado para gestionar la lógica de compartir resultados.
- * Proporciona una función `shareResult` y un estado `isSharing`.
- */
 export function useShare() {
   const [isSharing, setIsSharing] = useState(false);
 
-  /**
-   * Orquesta la generación de imagen/texto y utiliza la API Web Share.
-   * Proporciona fallbacks para navegadores no compatibles.
-   * @param config - Los datos del resultado a compartir.
-   * @returns `true` si la acción de compartir se inició, `false` si hubo un error.
-   */
   const shareResult = async (config: ShareConfig): Promise<boolean> => {
     setIsSharing(true);
     try {
-      const text = generateShareText(config);
-      const imageUrl = await generateShareImage(config);
+      const fullConfig = {
+        ...config,
+        logoUrl: config.logoUrl || 'https://via.placeholder.com/150x50/FFFFFF/000000?Text=TU+LOGO',
+      };
+      const text = generateShareText(fullConfig);
+      const imageUrl = await generateShareImage(fullConfig);
 
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const file = new File([blob], 'buscaronis-score.png', { type: 'image/png' });
       const shareUrl = config.appUrl || window.location.href;
 
-      // Intento 1: Compartir con imagen (si es posible)
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          text,
-          files: [file],
-          url: shareUrl,
-        });
+        await navigator.share({ text, files: [file], url: shareUrl });
         return true;
       }
-
-      // Intento 2: Compartir solo texto y URL (fallback para algunos móviles)
       if (navigator.share) {
-        await navigator.share({
-          text,
-          url: shareUrl,
-        });
+        await navigator.share({ text, url: shareUrl });
         return true;
       }
 
-      // Intento 3: Fallback para escritorio (copiar al portapapeles y descargar imagen)
-      await navigator.clipboard.writeText(text + '\n' + shareUrl);
-
+      await navigator.clipboard.writeText(`${text}\n${shareUrl}`);
       const link = document.createElement('a');
       link.href = imageUrl;
       link.download = 'buscaronis-score.png';
@@ -488,10 +412,9 @@ export function useShare() {
       link.click();
       document.body.removeChild(link);
 
-      alert('¡Resultado copiado al portapapeles y la imagen se está descargando!');
+      alert('¡Resultado copiado! La imagen se está descargando.');
       return true;
     } catch (error) {
-      // Ignorar errores AbortError que ocurren si el usuario cierra el diálogo de compartir.
       if (error instanceof DOMException && error.name === 'AbortError') {
         console.log('El usuario canceló la acción de compartir.');
         return false;
@@ -504,8 +427,5 @@ export function useShare() {
     }
   };
 
-  return {
-    shareResult,
-    isSharing,
-  };
+  return { shareResult, isSharing };
 }
