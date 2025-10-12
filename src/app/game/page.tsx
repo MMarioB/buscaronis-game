@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Board } from '@/components/game/GameBoard';
-import { GameStats } from '@/components/game/GameStats';
+import { GameStats as GameStatsComponent } from '@/components/game/GameStats';
 import { GameControls, type Difficulty } from '@/components/game/GameControls';
 import { QuestionModal } from '@/components/modals/QuestionModal';
 import { ExplanationModal } from '@/components/modals/ExplanationModal';
@@ -12,7 +12,7 @@ import { useBoard } from '@/hooks/useBoard';
 import { useGameState } from '@/hooks/useGameState';
 import { useQuestions } from '@/hooks/useQuestions';
 import { useTimer } from '@/hooks/useTimer';
-import type { Question, GameConfig } from '@/lib/types';
+import type { Question, GameConfig, GameStats } from '@/lib/types';
 
 const DIFFICULTIES: Record<Difficulty, GameConfig> = {
   easy: { rows: 9, cols: 9, mines: 10, label: 'Chill', points: 100 },
@@ -28,6 +28,7 @@ export default function Home() {
     score,
     correctAnswers,
     totalQuestions,
+    streak,
     setGameState,
     addCorrectAnswer,
     addIncorrectAnswer,
@@ -47,6 +48,18 @@ export default function Home() {
   const [showStats, setShowStats] = useState(false);
   const [explodedCell, setExplodedCell] = useState<{ row: number; col: number } | null>(null);
   const [moves, setMoves] = useState(0);
+
+  // Crear objeto GameStats para compartir
+  const gameStats: GameStats = useMemo(
+    () => ({
+      score,
+      streak,
+      correctAnswers,
+      totalQuestions,
+      timer,
+    }),
+    [score, streak, correctAnswers, totalQuestions, timer]
+  );
 
   // Inicializar juego
   const startNewGame = useCallback(() => {
@@ -195,7 +208,7 @@ export default function Home() {
         </div>
 
         {/* Game Stats */}
-        <GameStats
+        <GameStatsComponent
           minesCount={DIFFICULTIES[difficulty].mines}
           flagsCount={flagCount}
           time={timer}
@@ -247,10 +260,8 @@ export default function Home() {
       <GameOverModal
         isOpen={showGameOver}
         isWon={gameState === 'won'}
-        time={timer}
-        moves={moves}
-        correctAnswers={correctAnswers}
-        totalQuestions={totalQuestions}
+        stats={gameStats}
+        difficulty={difficulty}
         onPlayAgain={startNewGame}
         onViewStats={() => setShowStats(true)}
       />
