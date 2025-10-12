@@ -24,14 +24,12 @@
     ]
   },
   "dependencies": {
+    "@vercel/og": "^0.8.5",
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
     "react-parallax-tilt": "^1.7.310",
-    "satori": "^0.18.3",
-    "satori-html": "^0.3.2",
-    "sharp": "^0.34.4",
     "tone": "^15.1.22"
   },
   "devDependencies": {
