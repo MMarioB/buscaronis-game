@@ -49,9 +49,13 @@ export function useSound() {
 
   // Inicializar Tone.js al primer click del usuario (requerido por navegadores)
   const initAudio = useCallback(async () => {
-    if (!isInitialized) {
-      await Tone.start();
-      setIsInitialized(true);
+    if (!isInitialized && Tone.context.state !== 'running') {
+      try {
+        await Tone.start();
+        setIsInitialized(true);
+      } catch (error) {
+        console.warn('Audio initialization deferred until user interaction');
+      }
     }
   }, [isInitialized]);
 
