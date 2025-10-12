@@ -90,10 +90,10 @@ export const DESALIA_QUESTIONS: Question[] = [
   {
     id: '13',
     question: 'Ademas de Republica Dominicana, en que otro pais se ha celebrado Desalia?',
-    options: ['Mexico', 'Portugal', 'Espana', 'Italia'],
+    options: ['Mexico', 'Portugal', 'España', 'Italia'],
     correct: 2,
     explanation:
-      'Desalia tambien ha traido su espiritu a Espana, celebrando ediciones en lugares como Islantilla (Huelva).',
+      'Desalia tambien ha traido su espiritu a España, celebrando ediciones en lugares como Islantilla (Huelva).',
   },
   {
     id: '14',
@@ -283,7 +283,7 @@ export const DESALIA_QUESTIONS: Question[] = [
       'Su 5 aniversario',
       'Su 10 aniversario',
       'Su primer millon de fans',
-      'Su primera edicion en Espana',
+      'Su primera edicion en España',
     ],
     correct: 1,
     explanation:
@@ -317,12 +317,12 @@ export const DESALIA_QUESTIONS: Question[] = [
     options: [
       'Un album recopilatorio',
       'Una emisora de radio',
-      'Una gira de fiestas por Espana',
+      'Una gira de fiestas por España',
       'Un documental del festival',
     ],
     correct: 2,
     explanation:
-      'Desalia Music es una gira que lleva el espiritu del festival por diferentes ciudades y salas de Espana, calentando motores para la gran cita.',
+      'Desalia Music es una gira que lleva el espiritu del festival por diferentes ciudades y salas de España, calentando motores para la gran cita.',
   },
   {
     id: '35',
@@ -440,7 +440,7 @@ export const DESALIA_QUESTIONS: Question[] = [
       'Menos de 20',
       'Alrededor de 30',
       'Mas de 80',
-      'Solo en Republica Dominicana y Espana',
+      'Solo en Republica Dominicana y España',
     ],
     correct: 2,
     explanation:
