@@ -369,10 +369,14 @@ export default function Home() {
         <GameOverModal
           isOpen={showGameOver}
           isWon={gameState === 'won'}
-          time={timer}
-          moves={moves}
-          correctAnswers={correctAnswers}
-          totalQuestions={totalQuestions}
+          stats={{
+            score,
+            streak: correctAnswers,
+            correctAnswers,
+            totalQuestions,
+            timer,
+          }}
+          difficulty={difficulty}
           onPlayAgain={startNewGame}
           onViewStats={() => setShowStats(true)}
         />
