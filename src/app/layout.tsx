@@ -14,25 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 const knockout = localFont({
-  src: [
-    {
-      path: '../public/fonts/Knockout-HTF72-FullCruiserwt.woff2',
-      weight: 'normal',
-      style: 'normal',
-    },
-  ],
+  src: './fonts/Knockout-HTF72-FullCruiserwt.woff2',
   variable: '--font-knockout',
   display: 'swap',
 });
 
 const futura = localFont({
-  src: [
-    {
-      path: '../public/fonts/futura.woff2',
-      weight: 'normal',
-      style: 'normal',
-    },
-  ],
+  src: './fonts/futura.woff2',
   variable: '--font-futura',
   display: 'swap',
 });
