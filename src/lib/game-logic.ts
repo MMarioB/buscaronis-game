@@ -1,4 +1,4 @@
-import type { Board, Cell, Position } from './types';
+import type { Board, Position } from './types';
 
 /**
  * Crea un tablero vacío inicializado
@@ -7,14 +7,14 @@ import type { Board, Cell, Position } from './types';
  * @returns Tablero inicializado sin minas
  */
 export function createEmptyBoard(rows: number, cols: number): Board {
-    return Array.from({ length: rows }, () =>
-        Array.from({ length: cols }, () => ({
-            isMine: false,
-            isRevealed: false,
-            isFlagged: false,
-            adjacentMines: 0,
-        }))
-    );
+  return Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => ({
+      isMine: false,
+      isRevealed: false,
+      isFlagged: false,
+      adjacentMines: 0,
+    }))
+  );
 }
 
 /**
@@ -28,32 +28,32 @@ export function createEmptyBoard(rows: number, cols: number): Board {
  * @returns Nuevo tablero con minas colocadas y adyacencias calculadas
  */
 export function placeMines(
-    board: Board,
-    rows: number,
-    cols: number,
-    mineCount: number,
-    safeRow: number,
-    safeCol: number
+  board: Board,
+  rows: number,
+  cols: number,
+  mineCount: number,
+  safeRow: number,
+  safeCol: number
 ): Board {
-    // Deep clone para inmutabilidad
-    const newBoard: Board = JSON.parse(JSON.stringify(board));
-    let minesPlaced = 0;
+  // Deep clone para inmutabilidad
+  const newBoard: Board = JSON.parse(JSON.stringify(board));
+  let minesPlaced = 0;
 
-    while (minesPlaced < mineCount) {
-        const row = Math.floor(Math.random() * rows);
-        const col = Math.floor(Math.random() * cols);
+  while (minesPlaced < mineCount) {
+    const row = Math.floor(Math.random() * rows);
+    const col = Math.floor(Math.random() * cols);
 
-        // Evitar colocar mina en celda segura o donde ya hay una mina
-        const isSafeCell = row === safeRow && col === safeCol;
-        const hasMinealready = newBoard[row][col].isMine;
+    // Evitar colocar mina en celda segura o donde ya hay una mina
+    const isSafeCell = row === safeRow && col === safeCol;
+    const hasMinealready = newBoard[row][col].isMine;
 
-        if (!isSafeCell && !hasMinealready) {
-            newBoard[row][col].isMine = true;
-            minesPlaced++;
-        }
+    if (!isSafeCell && !hasMinealready) {
+      newBoard[row][col].isMine = true;
+      minesPlaced++;
     }
+  }
 
-    return calculateAdjacentMines(newBoard, rows, cols);
+  return calculateAdjacentMines(newBoard, rows, cols);
 }
 
 /**
@@ -63,49 +63,45 @@ export function placeMines(
  * @param cols - Número de columnas
  * @returns Tablero con adyacencias calculadas
  */
-function calculateAdjacentMines(
-    board: Board,
-    rows: number,
-    cols: number
-): Board {
-    const directions = [
-        [-1, -1], [-1, 0], [-1, 1],
-        [0, -1], [0, 1],
-        [1, -1], [1, 0], [1, 1],
-    ];
+function calculateAdjacentMines(board: Board, rows: number, cols: number): Board {
+  const directions = [
+    [-1, -1],
+    [-1, 0],
+    [-1, 1],
+    [0, -1],
+    [0, 1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+  ];
 
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            if (board[row][col].isMine) continue;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (board[row][col].isMine) continue;
 
-            let count = 0;
+      let count = 0;
 
-            for (const [dx, dy] of directions) {
-                const newRow = row + dx;
-                const newCol = col + dy;
+      for (const [dx, dy] of directions) {
+        const newRow = row + dx;
+        const newCol = col + dy;
 
-                if (isValidPosition(newRow, newCol, rows, cols) && board[newRow][newCol].isMine) {
-                    count++;
-                }
-            }
-
-            board[row][col].adjacentMines = count;
+        if (isValidPosition(newRow, newCol, rows, cols) && board[newRow][newCol].isMine) {
+          count++;
         }
-    }
+      }
 
-    return board;
+      board[row][col].adjacentMines = count;
+    }
+  }
+
+  return board;
 }
 
 /**
  * Verifica si una posición está dentro del tablero
  */
-function isValidPosition(
-    row: number,
-    col: number,
-    rows: number,
-    cols: number
-): boolean {
-    return row >= 0 && row < rows && col >= 0 && col < cols;
+function isValidPosition(row: number, col: number, rows: number, cols: number): boolean {
+  return row >= 0 && row < rows && col >= 0 && col < cols;
 }
 
 /**
@@ -118,34 +114,39 @@ function isValidPosition(
  * @param cols - Número total de columnas
  */
 export function revealCell(
-    board: Board,
-    row: number,
-    col: number,
-    rows: number,
-    cols: number
+  board: Board,
+  row: number,
+  col: number,
+  rows: number,
+  cols: number
 ): void {
-    // Validaciones
-    if (!isValidPosition(row, col, rows, cols)) return;
+  // Validaciones
+  if (!isValidPosition(row, col, rows, cols)) return;
 
-    const cell = board[row][col];
-    if (cell.isRevealed || cell.isFlagged) return;
+  const cell = board[row][col];
+  if (cell.isRevealed || cell.isFlagged || cell.isMine) return; // 🔥 FIX: No revelar minas durante flood fill
 
-    // Revelar celda actual
-    cell.isRevealed = true;
+  // Revelar celda actual
+  cell.isRevealed = true;
 
-    // Si tiene minas adyacentes o es mina, no continuar
-    if (cell.adjacentMines > 0 || cell.isMine) return;
+  // Si tiene minas adyacentes, no continuar con flood fill
+  if (cell.adjacentMines > 0) return;
 
-    // Flood fill: revelar celdas adyacentes si la actual está vacía
-    const directions = [
-        [-1, -1], [-1, 0], [-1, 1],
-        [0, -1], [0, 1],
-        [1, -1], [1, 0], [1, 1],
-    ];
+  // Flood fill: revelar celdas adyacentes si la actual está vacía (adjacentMines === 0)
+  const directions = [
+    [-1, -1],
+    [-1, 0],
+    [-1, 1],
+    [0, -1],
+    [0, 1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+  ];
 
-    for (const [dx, dy] of directions) {
-        revealCell(board, row + dx, col + dy, rows, cols);
-    }
+  for (const [dx, dy] of directions) {
+    revealCell(board, row + dx, col + dy, rows, cols);
+  }
 }
 
 /**
@@ -157,25 +158,25 @@ export function revealCell(
  * @returns true si todas las celdas seguras están reveladas
  */
 export function checkWinCondition(
-    board: Board,
-    rows: number,
-    cols: number,
-    mineCount: number
+  board: Board,
+  rows: number,
+  cols: number,
+  mineCount: number
 ): boolean {
-    const totalCells = rows * cols;
-    const safeCells = totalCells - mineCount;
-    let revealedSafeCells = 0;
+  const totalCells = rows * cols;
+  const safeCells = totalCells - mineCount;
+  let revealedSafeCells = 0;
 
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            const cell = board[row][col];
-            if (cell.isRevealed && !cell.isMine) {
-                revealedSafeCells++;
-            }
-        }
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cell = board[row][col];
+      if (cell.isRevealed && !cell.isMine) {
+        revealedSafeCells++;
+      }
     }
+  }
 
-    return revealedSafeCells === safeCells;
+  return revealedSafeCells === safeCells;
 }
 
 /**
@@ -186,25 +187,21 @@ export function checkWinCondition(
  * @param cols - Número de columnas
  * @returns Array de posiciones seguras
  */
-export function getSafeCells(
-    board: Board,
-    rows: number,
-    cols: number
-): Position[] {
-    const safeCells: Position[] = [];
+export function getSafeCells(board: Board, rows: number, cols: number): Position[] {
+  const safeCells: Position[] = [];
 
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            const cell = board[row][col];
-            const isSafe = !cell.isMine && !cell.isRevealed && !cell.isFlagged;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cell = board[row][col];
+      const isSafe = !cell.isMine && !cell.isRevealed && !cell.isFlagged;
 
-            if (isSafe) {
-                safeCells.push({ row, col });
-            }
-        }
+      if (isSafe) {
+        safeCells.push({ row, col });
+      }
     }
+  }
 
-    return safeCells;
+  return safeCells;
 }
 
 /**
@@ -215,13 +212,13 @@ export function getSafeCells(
  * @returns Nuevo tablero con bandera alternada
  */
 export function toggleFlag(board: Board, row: number, col: number): Board {
-    const newBoard: Board = JSON.parse(JSON.stringify(board));
+  const newBoard: Board = JSON.parse(JSON.stringify(board));
 
-    if (!newBoard[row][col].isRevealed) {
-        newBoard[row][col].isFlagged = !newBoard[row][col].isFlagged;
-    }
+  if (!newBoard[row][col].isRevealed) {
+    newBoard[row][col].isFlagged = !newBoard[row][col].isFlagged;
+  }
 
-    return newBoard;
+  return newBoard;
 }
 
 /**
@@ -232,15 +229,15 @@ export function toggleFlag(board: Board, row: number, col: number): Board {
  * @returns Número de banderas
  */
 export function countFlags(board: Board, rows: number, cols: number): number {
-    let count = 0;
+  let count = 0;
 
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            if (board[row][col].isFlagged) {
-                count++;
-            }
-        }
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (board[row][col].isFlagged) {
+        count++;
+      }
     }
+  }
 
-    return count;
+  return count;
 }
