@@ -30,7 +30,7 @@ export function GameOverModal({
 
   // ✅ Configuración para compartir
   const shareConfig: ShareConfig = {
-    score: correctAnswers * 10, // o el score real si lo tienes
+    score: correctAnswers * 10,
     accuracy,
     difficulty: 'easy',
   };
