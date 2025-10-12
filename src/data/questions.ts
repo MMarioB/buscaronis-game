@@ -3,7 +3,7 @@ import type { Question } from '../lib/types';
 export const DESALIA_QUESTIONS: Question[] = [
   {
     id: '1',
-    question: 'En que ano fue fundada Ron Barcelo?',
+    question: 'En que año fue fundada Ron Barcelo?',
     options: ['1930', '1950', '1980', '2000'],
     correct: 0,
     explanation: 'Ron Barcelo fue fundada en 1930 en Republica Dominicana.',
@@ -32,9 +32,9 @@ export const DESALIA_QUESTIONS: Question[] = [
   {
     id: '5',
     question: 'Cual es la edad minima del Ron Barcelo Imperial?',
-    options: ['5 anos', '8 anos', '10 anos', '15 anos'],
+    options: ['5 años', '8 años', '10 años', '15 años'],
     correct: 2,
-    explanation: 'Ron Barcelo Imperial tiene un envejecimiento de 10 anos.',
+    explanation: 'Ron Barcelo Imperial tiene un envejecimiento de 10 años.',
   },
   {
     id: '6',
@@ -235,7 +235,7 @@ export const DESALIA_QUESTIONS: Question[] = [
   {
     id: '27',
     question:
-      'Cual de estos rones de Barcelo tiene un envejecimiento de hasta 12 anos en barricas de roble americano y frances?',
+      'Cual de estos rones de Barcelo tiene un envejecimiento de hasta 12 años en barricas de roble americano y frances?',
     options: [
       'Barcelo Gran Anejo',
       'Barcelo Imperial Premium Blend 40 Aniversario',
@@ -244,7 +244,7 @@ export const DESALIA_QUESTIONS: Question[] = [
     ],
     correct: 1,
     explanation:
-      'El Imperial Premium Blend 40 Aniversario es una edicion especial con un doble envejecimiento de hasta 12 anos en barricas seleccionadas.',
+      'El Imperial Premium Blend 40 Aniversario es una edicion especial con un doble envejecimiento de hasta 12 años en barricas seleccionadas.',
   },
   {
     id: '28',
@@ -343,7 +343,7 @@ export const DESALIA_QUESTIONS: Question[] = [
     question: 'Cual es la principal via para conseguir una plaza para ir a Desalia?',
     options: [
       'Comprando una entrada online',
-      'Siendo mayor de 30 anos',
+      'Siendo mayor de 30 años',
       'A traves de concursos y promociones de la marca',
       'Apuntandose en una agencia de viajes',
     ],
@@ -647,7 +647,7 @@ export const DESALIA_QUESTIONS: Question[] = [
     options: [
       'La entrega de premios',
       'El fin de la experiencia y la despedida',
-      'El cumpleanos del fundador',
+      'El cumpleaños del fundador',
       'Un concurso de talentos',
     ],
     correct: 1,
