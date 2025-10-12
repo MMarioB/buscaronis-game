@@ -29,11 +29,6 @@ export const metadata: Metadata = {
   title: 'BuscaRonis - Desafía el Momento',
   description:
     '🦆 Encuentra todos los Ronis sin tocar las minas. Juega, aprende sobre Ron Barceló y gana premios con Desalía.',
-  icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
-  },
 };
 
 export default function RootLayout({
