@@ -39,6 +39,8 @@ export default function Home() {
     score,
     correctAnswers,
     totalQuestions,
+    streak,
+    bestStreak,
     setGameState,
     addCorrectAnswer,
     addIncorrectAnswer,
@@ -316,6 +318,8 @@ export default function Home() {
             minesCount={DIFFICULTIES[difficulty].mines}
             flagsCount={flagCount}
             time={timer}
+            streak={streak}
+            bestStreak={bestStreak}
           />
 
           <GameControls
@@ -371,7 +375,7 @@ export default function Home() {
           isWon={gameState === 'won'}
           stats={{
             score,
-            streak: correctAnswers,
+            streak,
             correctAnswers,
             totalQuestions,
             timer,
