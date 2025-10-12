@@ -6,8 +6,15 @@ import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
 
+// Función auxiliar para manejar parámetros de consulta que pueden ser arrays
+const getStringQueryParam = (param: string | string[] | undefined): string | undefined => {
+  if (Array.isArray(param)) return param[0];
+  return param;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    // 1. Cargar las fuentes desde el sistema de archivos del servidor
     const knockoutPath = path.join(
       process.cwd(),
       'public',
@@ -19,8 +26,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const knockoutFontData = await fs.readFile(knockoutPath);
     const futuraFontData = await fs.readFile(futuraPath);
 
-    const { score, accuracy, difficulty } = req.query;
+    // 2. Obtener y asegurar los datos de la URL
+    const score = getStringQueryParam(req.query.score);
+    const accuracy = getStringQueryParam(req.query.accuracy);
+    const difficulty = getStringQueryParam(req.query.difficulty);
 
+    // Valores por defecto
+    const finalScore = score ?? '0';
+    const finalAccuracy = accuracy ?? '0';
+    const finalDifficulty = difficulty ?? 'EASY';
+
+    // 3. Definir la estructura de la imagen con HTML y Tailwind
     const template = html(`
       <div style="font-family: 'Futura';" class="w-full h-full flex flex-col justify-between items-center p-12 text-white bg-[#1a0429]">
         <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-[#23053A] to-[#000000]"></div>
@@ -32,18 +48,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         </div>
 
         <div class="w-80 h-80 rounded-full border-4 border-[#FF6B9D] flex flex-col justify-center items-center" style="box-shadow: 0 0 30px #FF6B9D;">
-          <p style="font-family: 'Knockout';" class="text-9xl font-black">${score ?? 0}</p>
+          <p style="font-family: 'Knockout';" class="text-9xl font-black">${finalScore}</p>
           <p class="text-3xl tracking-widest opacity-70">PUNTOS</p>
         </div>
 
         <div class="w-full flex justify-center gap-8">
           <div class="w-64 h-24 flex items-center justify-center gap-4 bg-white/10 rounded-2xl border-2 border-[#FF6B9D]" style="box-shadow: 0 0 15px #FF6B9D;">
             <p class="text-5xl">🎯</p>
-            <p class="text-5xl font-bold">${accuracy ?? 0}%</p>
+            <p class="text-5xl font-bold">${finalAccuracy}%</p>
           </div>
           <div class="w-64 h-24 flex items-center justify-center gap-4 bg-white/10 rounded-2xl border-2 border-[#FF6B9D]" style="box-shadow: 0 0 15px #FF6B9D;">
             <p class="text-5xl">⚡️</p>
-            <p class="text-5xl font-bold">${difficulty ?? 'EASY'}</p>
+            <p class="text-5xl font-bold">${finalDifficulty}</p>
           </div>
         </div>
         
@@ -53,22 +69,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       </div>
     `);
 
+    // 4. Generar el SVG con Satori (con aserción de tipo)
     const svg = await satori(template as unknown as ReactElement, {
       width: 1200,
       height: 630,
       fonts: [
         { name: 'Knockout', data: knockoutFontData, weight: 900, style: 'normal' },
         { name: 'Futura', data: futuraFontData, weight: 400, style: 'normal' },
-        { name: 'Futura', data: futuraFontData, weight: 700, style: 'normal' },
       ],
     });
 
+    // 5. Convertir SVG a PNG y enviar la imagen
     const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
+
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'public, immutable, no-transform, max-age=31536000');
     res.send(pngBuffer);
   } catch (error) {
-    console.error(error);
+    console.error('Error in image generation handler:', error);
     res.status(500).send('Error generating image');
   }
 }
