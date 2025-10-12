@@ -1,15 +1,15 @@
 import { Button } from '../ui/Button';
 import { StatBadge } from '../ui/StatBadge';
 import { ShareButton } from '../ui/ShareButton';
-import type { ShareConfig } from '@/hooks/useShare';
+import type { GameStats, Difficulty, Achievement, PlayerRank } from '@/lib/types';
 
 interface GameOverModalProps {
   isOpen: boolean;
   isWon: boolean;
-  time: number;
-  moves: number;
-  correctAnswers?: number;
-  totalQuestions?: number;
+  stats: GameStats;
+  difficulty?: Difficulty;
+  achievement?: Achievement;
+  rank?: PlayerRank;
   onPlayAgain: () => void;
   onViewStats?: () => void;
 }
@@ -17,23 +17,19 @@ interface GameOverModalProps {
 export function GameOverModal({
   isOpen,
   isWon,
-  time,
-  moves,
-  correctAnswers = 0,
-  totalQuestions = 0,
+  stats,
+  difficulty = 'medium',
+  achievement,
+  rank,
   onPlayAgain,
   onViewStats,
 }: GameOverModalProps) {
   if (!isOpen) return null;
 
-  const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+  const accuracy =
+    stats.totalQuestions > 0 ? Math.round((stats.correctAnswers / stats.totalQuestions) * 100) : 0;
 
-  // ✅ Configuración para compartir
-  const shareConfig: ShareConfig = {
-    score: correctAnswers * 10,
-    accuracy,
-    difficulty: 'easy',
-  };
+  const wrongAnswers = stats.totalQuestions - stats.correctAnswers;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg animate-in fade-in duration-500">
@@ -69,26 +65,36 @@ export function GameOverModal({
             </p>
           </div>
 
+          {/* Estadísticas */}
           <div className="flex flex-wrap gap-3 sm:gap-4 justify-center mb-10">
-            <StatBadge icon="⚡" label="Tiempo" value={`${time}s`} variant="info" />
-            <StatBadge icon="🎯" label="Movimientos" value={moves} variant="default" />
-            {totalQuestions > 0 && (
-              <StatBadge
-                icon="🧠"
-                label="Preguntas"
-                value={`${correctAnswers}/${totalQuestions}`}
-                variant={correctAnswers === totalQuestions ? 'success' : 'warning'}
-              />
-            )}
+            <StatBadge icon="🏆" label="Puntuación" value={stats.score} variant="success" />
+            <StatBadge
+              icon="⏱️"
+              label="Tiempo"
+              value={`${Math.floor(stats.timer / 60)}:${(stats.timer % 60).toString().padStart(2, '0')}`}
+              variant="info"
+            />
+            <StatBadge icon="✅" label="Correctas" value={stats.correctAnswers} variant="success" />
+            <StatBadge icon="❌" label="Incorrectas" value={wrongAnswers} variant="warning" />
+            <StatBadge icon="🔥" label="Racha" value={stats.streak} variant="default" />
+            <StatBadge
+              icon="🎯"
+              label="Precisión"
+              value={`${accuracy}%`}
+              variant={accuracy >= 80 ? 'success' : accuracy >= 50 ? 'warning' : 'default'}
+            />
           </div>
 
           {/* Botones */}
-          <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex flex-col gap-4">
             {/* Botón compartir - Solo si ganó */}
             {isWon && (
-              <div className="flex justify-center">
-                <ShareButton config={shareConfig} />
-              </div>
+              <ShareButton
+                stats={stats}
+                difficulty={difficulty}
+                achievement={achievement}
+                rank={rank}
+              />
             )}
 
             {/* Botones de acción */}

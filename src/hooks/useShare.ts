@@ -1,62 +1,104 @@
-'use client';
 import { useState } from 'react';
+import { GameStats, Achievement, PlayerRank, Difficulty } from '@/lib/types';
+import { generateShareImage } from '@/lib/shareImage';
+import { generateShareText, gameStatsToShareConfig } from '@/lib/shareTemplates';
 
-export interface ShareConfig {
-  score: number;
-  accuracy: number;
-  difficulty: string;
-  appUrl?: string;
-}
-
-function generateShareText(config: ShareConfig): string {
-  const { score, accuracy, difficulty } = config;
-  let text = `🏆 ¡He conseguido ${score} puntos en #BuscaRonis!\n\n`;
-  text += `🎯 Precisión: ${accuracy}%\n`;
-  text += `⚡ Dificultad: ${difficulty.toUpperCase()}\n\n`;
-  text += `¿Puedes superar mi puntuación? ¡Juega ahora en Desalía! 🍹\n`;
-  text += `\n#Desalía #RonBarceló`;
-  return text;
-}
-
-/**
- * Hook para gestionar la lógica de compartir.
- */
 export function useShare() {
   const [isSharing, setIsSharing] = useState(false);
 
-  const shareResult = async (config: ShareConfig): Promise<boolean> => {
+  const shareResults = async (
+    stats: GameStats,
+    difficulty: Difficulty = 'medium',
+    achievement?: Achievement,
+    rank?: PlayerRank
+  ) => {
     setIsSharing(true);
+
     try {
-      const text = generateShareText(config);
-      const imageUrl = `/api/generate-image?score=${config.score}&accuracy=${config.accuracy}&difficulty=${config.difficulty.toUpperCase()}`;
+      const shareConfig = gameStatsToShareConfig(stats, difficulty, achievement, rank);
+      const shareText = generateShareText(shareConfig);
 
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const file = new File([blob], 'buscaronis-score.png', { type: 'image/png' });
-      const shareUrl = config.appUrl || window.location.href;
+      // Si Web Share API está disponible y soporta archivos
+      if (navigator.share && navigator.canShare) {
+        try {
+          const imageBlob = await generateShareImage(stats);
+          const file = new File([imageBlob], 'buscaronis-results.png', {
+            type: 'image/png',
+          });
 
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ text, files: [file], url: shareUrl });
-      } else if (navigator.share) {
-        await navigator.share({ text, url: shareUrl });
-      } else {
-        await navigator.clipboard.writeText(`${text}\n${shareUrl}`);
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'buscaronis-score.png';
-        link.click();
-        link.remove();
-        alert('¡Resultado copiado! La imagen se está descargando.');
+          const shareData = {
+            text: shareText,
+            files: [file],
+          };
+
+          // Verificar si se pueden compartir archivos
+          if (navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            return { success: true, method: 'native' as const };
+          }
+        } catch (error) {
+          console.log('Could not share with image, trying text only:', error);
+        }
+
+        // Fallback: compartir solo texto
+        try {
+          await navigator.share({
+            text: shareText,
+            url: window.location.origin,
+          });
+          return { success: true, method: 'native' as const };
+        } catch (error) {
+          console.log('Native share cancelled or failed:', error);
+        }
       }
-      return true;
+
+      // Fallback final: copiar al portapapeles
+      await navigator.clipboard.writeText(shareText);
+      return { success: true, method: 'copy' as const };
     } catch (error) {
-      console.error('Error al compartir:', error);
-      alert('Hubo un error al intentar compartir.');
-      return false;
+      console.error('Error sharing:', error);
+      return {
+        success: false,
+        method: 'failed' as const,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
     } finally {
       setIsSharing(false);
     }
   };
 
-  return { shareResult, isSharing };
+  const downloadImage = async (stats: GameStats) => {
+    setIsSharing(true);
+
+    try {
+      const imageBlob = await generateShareImage(stats);
+      const url = URL.createObjectURL(imageBlob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `buscaronis-${stats.score}-puntos.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+
+      return { success: true, method: 'download' as const };
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      return {
+        success: false,
+        method: 'failed' as const,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  return {
+    shareResults,
+    downloadImage,
+    isSharing,
+  };
 }

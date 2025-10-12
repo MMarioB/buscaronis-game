@@ -1,4 +1,5 @@
 import { ShareConfig } from './types';
+import { GameStats, Difficulty, PlayerRank, Achievement } from './types';
 import { RANKS } from './achievements';
 
 /**
@@ -68,6 +69,29 @@ export function generateTwitterText(config: ShareConfig): string {
   text += `@RonBarcelo #Desalía`;
 
   return text;
+}
+
+export function gameStatsToShareConfig(
+  stats: GameStats,
+  difficulty: Difficulty = 'medium',
+  achievement?: Achievement,
+  rank?: PlayerRank
+): ShareConfig {
+  const accuracy =
+    stats.totalQuestions > 0 ? Math.round((stats.correctAnswers / stats.totalQuestions) * 100) : 0;
+
+  // Determinar si ganó (ajusta este umbral según tu lógica de juego)
+  const won = stats.score >= 1000 || stats.correctAnswers >= 10;
+
+  return {
+    score: stats.score,
+    accuracy,
+    difficulty,
+    won,
+    timeElapsed: stats.timer,
+    achievement,
+    rank,
+  };
 }
 
 /**
