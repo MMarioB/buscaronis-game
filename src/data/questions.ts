@@ -119,7 +119,7 @@ export const DESALIA_QUESTIONS: Question[] = [
       'Planificar el futuro',
       'Recordar el pasado',
       'Disfrutar el presente al maximo',
-      'Ahorrar para el manana',
+      'Ahorrar para el mañana',
     ],
     correct: 2,
     explanation:
