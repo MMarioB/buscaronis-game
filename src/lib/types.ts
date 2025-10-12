@@ -136,3 +136,21 @@ export interface PlayerStatsWithAchievements extends PlayerStats {
   consecutiveWins: number;
   fastestWin: number;
 }
+
+export interface ShareConfig {
+  score: number;
+  accuracy: number;
+  difficulty: Difficulty;
+  rank?: PlayerRank;
+  achievement?: Achievement;
+  won: boolean;
+  timeElapsed: number;
+}
+
+export interface ShareResult {
+  success: boolean;
+  method: 'native' | 'copy' | 'download' | 'failed';
+  error?: string;
+}
+
+export type SharePlatform = 'native' | 'twitter' | 'facebook' | 'whatsapp' | 'copy' | 'download';

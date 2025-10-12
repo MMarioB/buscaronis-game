@@ -1,5 +1,7 @@
 import { Button } from '../ui/Button';
 import { StatBadge } from '../ui/StatBadge';
+import { ShareButton } from '../ui/ShareButton';
+import type { ShareConfig } from '@/hooks/useShare';
 
 interface GameOverModalProps {
   isOpen: boolean;
@@ -23,6 +25,16 @@ export function GameOverModal({
   onViewStats,
 }: GameOverModalProps) {
   if (!isOpen) return null;
+
+  const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+  // ✅ Configuración para compartir
+  const shareConfig: ShareConfig = {
+    score: correctAnswers * 10, // o el score real si lo tienes
+    accuracy,
+    difficulty: 'easy', // TODO: esto debería venir como prop
+    timeElapsed: time,
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg animate-in fade-in duration-500">
@@ -71,26 +83,37 @@ export function GameOverModal({
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Button
-              onClick={onPlayAgain}
-              variant="primary"
-              className="font-knockout px-10 py-4 text-lg sm:text-xl font-bold tracking-wider shadow-2xl hover:shadow-[0_0_40px_rgba(255,199,87,0.6)] transition-all duration-300"
-            >
-              <span className="mr-2">🔥</span>
-              JUGAR DE NUEVO
-            </Button>
-
-            {onViewStats && (
-              <Button
-                onClick={onViewStats}
-                variant="secondary"
-                className="font-knockout px-10 py-4 text-base sm:text-lg tracking-wider backdrop-blur-sm"
-              >
-                <span className="mr-2">📊</span>
-                VER ESTADÍSTICAS
-              </Button>
+          {/* Botones */}
+          <div className="flex flex-col gap-3 sm:gap-4">
+            {/* Botón compartir - Solo si ganó */}
+            {isWon && (
+              <div className="flex justify-center">
+                <ShareButton config={shareConfig} />
+              </div>
             )}
+
+            {/* Botones de acción */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+              <Button
+                onClick={onPlayAgain}
+                variant="primary"
+                className="font-knockout px-10 py-4 text-lg sm:text-xl font-bold tracking-wider shadow-2xl hover:shadow-[0_0_40px_rgba(255,199,87,0.6)] transition-all duration-300"
+              >
+                <span className="mr-2">🔥</span>
+                JUGAR DE NUEVO
+              </Button>
+
+              {onViewStats && (
+                <Button
+                  onClick={onViewStats}
+                  variant="secondary"
+                  className="font-knockout px-10 py-4 text-base sm:text-lg tracking-wider backdrop-blur-sm"
+                >
+                  <span className="mr-2">📊</span>
+                  VER ESTADÍSTICAS
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
