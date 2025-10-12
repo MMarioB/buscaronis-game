@@ -6,7 +6,6 @@ import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
 
-// Función auxiliar para manejar parámetros de consulta que pueden ser arrays
 const getStringQueryParam = (param: string | string[] | undefined): string | undefined => {
   if (Array.isArray(param)) return param[0];
   return param;
@@ -14,7 +13,7 @@ const getStringQueryParam = (param: string | string[] | undefined): string | und
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // 1. Cargar las fuentes desde el sistema de archivos del servidor
+    // 1. Cargar las fuentes
     const knockoutPath = path.join(
       process.cwd(),
       'public',
@@ -31,12 +30,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const accuracy = getStringQueryParam(req.query.accuracy);
     const difficulty = getStringQueryParam(req.query.difficulty);
 
-    // Valores por defecto
     const finalScore = score ?? '0';
     const finalAccuracy = accuracy ?? '0';
     const finalDifficulty = difficulty ?? 'EASY';
 
-    // 3. Definir la estructura de la imagen con HTML y Tailwind
+    // 3. Definir la estructura de la imagen
     const template = html(`
       <div style="font-family: 'Futura';" class="w-full h-full flex flex-col justify-between items-center p-12 text-white bg-[#1a0429]">
         <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-[#23053A] to-[#000000]"></div>
@@ -69,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       </div>
     `);
 
-    // 4. Generar el SVG con Satori (con aserción de tipo)
+    // 4. Generar el SVG con Satori
     const svg = await satori(template as unknown as ReactElement, {
       width: 1200,
       height: 630,
@@ -82,11 +80,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // 5. Convertir SVG a PNG y enviar la imagen
     const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
 
+    if (!pngBuffer || pngBuffer.length < 100) {
+      throw new Error('PNG buffer is empty or too small.');
+    }
+
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'public, immutable, no-transform, max-age=31536000');
     res.send(pngBuffer);
   } catch (error) {
-    console.error('Error in image generation handler:', error);
+    // Si llegamos aquí, el error se habrá registrado y el cliente recibirá un 500
+    console.error('Error generating image (check fonts/paths):', error);
     res.status(500).send('Error generating image');
   }
 }
