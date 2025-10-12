@@ -32,41 +32,47 @@ const IMAGE_HEIGHT = 630;
  */
 const STYLE_CONFIG = {
   background: {
-    gradient: ['#FF8C42', '#FF6B35', '#FFA55F'],
-    textureColor: 'rgba(0, 0, 0, 0.03)',
-    vignetteColor: 'rgba(0, 0, 0, 0.3)',
+    gradient: ['#F99B2A', '#E65C00', '#F39C12'],
+    textureColor: 'rgba(255, 255, 255, 0.04)',
+    vignetteColor: 'rgba(0, 0, 0, 0.4)',
+    lightRayColor: 'rgba(255, 255, 255, 0.08)',
   },
   header: {
-    font: 'bold 72px var(--font-knockout), system-ui, sans-serif',
-    color: 'rgba(255, 255, 255, 0.95)',
-    shadow: 'rgba(0, 0, 0, 0.4)',
+    font: '900 80px var(--font-knockout), system-ui, sans-serif',
+    color: '#FFFFFF',
+    shadow: 'rgba(0, 0, 0, 0.5)',
+    stroke: 'rgba(0,0,0,0.2)',
   },
   subheader: {
-    font: '36px var(--font-futura), system-ui, sans-serif',
-    color: 'rgba(255, 255, 255, 0.85)',
+    font: '40px var(--font-futura), system-ui, sans-serif',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   score: {
-    font: 'bold 140px var(--font-knockout), system-ui, sans-serif',
+    font: '900 150px var(--font-knockout), system-ui, sans-serif',
     color: '#FF6B35',
-    labelFont: 'bold 32px var(--font-futura), system-ui, sans-serif',
+    labelFont: 'bold 36px var(--font-futura), system-ui, sans-serif',
     labelColor: '#FF8C42',
-    circleGradient: ['#FFFFFF', '#F5F5F5'],
-    circleShadow: 'rgba(0, 0, 0, 0.3)',
-    circleStroke: 'rgba(255, 107, 53, 0.3)',
+    circleGradient: ['#FFFFFF', '#EAEAEA'],
+    circleShadow: 'rgba(0, 0, 0, 0.35)',
+    innerShadow: 'rgba(0, 0, 0, 0.2)',
+    shineColor: 'rgba(255, 255, 255, 0.5)',
   },
   badges: {
-    font: 'bold 40px var(--font-futura), system-ui, sans-serif',
-    color: '#FF6B35',
-    difficultyFont: 'bold 36px var(--font-futura), system-ui, sans-serif',
-    iconFont: '48px system-ui, -apple-system, sans-serif',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    shadow: 'rgba(0, 0, 0, 0.25)',
-    stroke: 'rgba(255, 107, 53, 0.3)',
+    font: 'bold 42px var(--font-futura), system-ui, sans-serif',
+    color: '#E65C00',
+    difficultyFont: 'bold 38px var(--font-futura), system-ui, sans-serif',
+    iconFont: '52px system-ui, -apple-system, sans-serif',
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    shadow: 'rgba(0, 0, 0, 0.3)',
+    stroke: 'rgba(255, 255, 255, 0.5)',
   },
   footer: {
-    font: 'bold 32px var(--font-futura), system-ui, sans-serif',
-    color: 'rgba(255, 255, 255, 0.9)',
-    shadow: 'rgba(0, 0, 0, 0.3)',
+    font: 'bold 36px var(--font-futura), system-ui, sans-serif',
+    color: 'rgba(255, 255, 255, 0.95)',
+    shadow: 'rgba(0, 0, 0, 0.5)',
+  },
+  decorations: {
+    confettiColors: ['#FFFFFF', '#FFD700', '#FFA500'],
   },
 };
 
@@ -95,7 +101,7 @@ function roundRect(
 }
 
 /**
- * Dibuja el fondo con gradiente, textura y viñeta.
+ * Dibuja el fondo con gradiente, rayos de luz y viñeta.
  */
 function drawBackground(ctx: CanvasRenderingContext2D) {
   const { width, height } = ctx.canvas;
@@ -109,19 +115,26 @@ function drawBackground(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
-  // Textura de círculos sutil
-  ctx.fillStyle = background.textureColor;
-  for (let i = 0; i < 30; i++) {
+  // Rayos de luz sutiles desde el centro
+  const centerX = width / 2;
+  const centerY = height / 2;
+  ctx.save();
+  ctx.globalCompositeOperation = 'overlay';
+  for (let i = 0; i < 12; i++) {
     ctx.beginPath();
-    ctx.arc(
-      Math.random() * width,
-      Math.random() * height,
-      Math.random() * 200 + 100,
-      0,
-      Math.PI * 2
-    );
+    ctx.moveTo(centerX, centerY);
+    const angle = (i / 12) * Math.PI * 2;
+    const x1 = centerX + Math.cos(angle) * width * 1.5;
+    const y1 = centerY + Math.sin(angle) * width * 1.5;
+    const x2 = centerX + Math.cos(angle + 0.1) * width * 1.5;
+    const y2 = centerY + Math.sin(angle + 0.1) * width * 1.5;
+    ctx.lineTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.closePath();
+    ctx.fillStyle = background.lightRayColor;
     ctx.fill();
   }
+  ctx.restore();
 
   // Viñeta para dar profundidad
   const radial = ctx.createRadialGradient(
@@ -130,9 +143,9 @@ function drawBackground(ctx: CanvasRenderingContext2D) {
     0,
     width / 2,
     height / 2,
-    width * 0.7
+    width * 0.8
   );
-  radial.addColorStop(0, 'rgba(0,0,0,0)');
+  radial.addColorStop(0.4, 'rgba(0,0,0,0)');
   radial.addColorStop(1, background.vignetteColor);
   ctx.fillStyle = radial;
   ctx.fillRect(0, 0, width, height);
@@ -151,7 +164,12 @@ function drawHeader(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = header.color;
   ctx.shadowColor = header.shadow;
   ctx.shadowBlur = 25;
-  ctx.shadowOffsetY = 5;
+  ctx.shadowOffsetY = 8;
+
+  // Contorno sutil para legibilidad
+  ctx.strokeStyle = header.stroke;
+  ctx.lineWidth = 4;
+  ctx.strokeText('🍹 BUSCARONIS', width / 2, 100);
   ctx.fillText('🍹 BUSCARONIS', width / 2, 100);
   ctx.restore();
 
@@ -164,7 +182,7 @@ function drawHeader(ctx: CanvasRenderingContext2D) {
 }
 
 /**
- * Dibuja el círculo central con la puntuación.
+ * Dibuja el círculo central con la puntuación con efecto 3D/metálico.
  */
 function drawScoreCircle(ctx: CanvasRenderingContext2D, score: number) {
   const { width } = ctx.canvas;
@@ -175,18 +193,19 @@ function drawScoreCircle(ctx: CanvasRenderingContext2D, score: number) {
 
   // Sombra proyectada del círculo
   ctx.save();
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+  ctx.filter = 'blur(15px)';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
   ctx.beginPath();
-  ctx.arc(centerX + 5, centerY + 10, radius, 0, Math.PI * 2);
+  ctx.arc(centerX + 10, centerY + 15, radius, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  // Círculo principal con gradiente y sombra interior
+  // Círculo principal
   ctx.save();
   const circleGradient = ctx.createRadialGradient(
-    centerX - 30,
-    centerY - 30,
-    0,
+    centerX,
+    centerY,
+    radius * 0.8,
     centerX,
     centerY,
     radius
@@ -194,21 +213,39 @@ function drawScoreCircle(ctx: CanvasRenderingContext2D, score: number) {
   circleGradient.addColorStop(0, scoreStyle.circleGradient[0]);
   circleGradient.addColorStop(1, scoreStyle.circleGradient[1]);
   ctx.fillStyle = circleGradient;
-  ctx.shadowColor = scoreStyle.circleShadow;
-  ctx.shadowBlur = 40;
-  ctx.shadowOffsetY = 15;
   ctx.beginPath();
   ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  // Borde sutil del círculo
+  // Sombra interior para efecto de profundidad
   ctx.save();
-  ctx.strokeStyle = scoreStyle.circleStroke;
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = scoreStyle.innerShadow;
+  ctx.lineWidth = 10;
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius - 2, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, radius - 5, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.shadowColor = scoreStyle.innerShadow;
+  ctx.shadowBlur = 15;
+  ctx.shadowOffsetX = 5;
+  ctx.shadowOffsetY = 5;
   ctx.stroke();
+  ctx.restore();
+
+  // Efecto de brillo/reflejo en la parte superior
+  ctx.save();
+  const shineGradient = ctx.createLinearGradient(
+    centerX - radius,
+    centerY - radius,
+    centerX,
+    centerY
+  );
+  shineGradient.addColorStop(0, scoreStyle.shineColor);
+  shineGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = shineGradient;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, -Math.PI * 0.6, -Math.PI * 0.1);
+  ctx.fill();
   ctx.restore();
 
   // Texto de la puntuación
@@ -227,7 +264,7 @@ function drawScoreCircle(ctx: CanvasRenderingContext2D, score: number) {
   ctx.fillStyle = scoreStyle.labelColor;
   ctx.font = scoreStyle.labelFont;
   ctx.textAlign = 'center';
-  ctx.fillText('PUNTOS', centerX, centerY + 60);
+  ctx.fillText('PUNTOS', centerX, centerY + 70);
   ctx.restore();
 }
 
@@ -243,9 +280,9 @@ function drawStatBadge(
   isDifficulty = false
 ) {
   const { badges } = STYLE_CONFIG;
-  const width = 240;
-  const height = 80;
-  const radius = 20;
+  const width = 250;
+  const height = 85;
+  const radius = 25;
 
   // Fondo del badge con sombra
   ctx.save();
@@ -257,7 +294,7 @@ function drawStatBadge(
   ctx.fill();
   ctx.restore();
 
-  // Borde del badge
+  // Borde sutil
   ctx.save();
   ctx.strokeStyle = badges.stroke;
   ctx.lineWidth = 3;
@@ -270,7 +307,7 @@ function drawStatBadge(
   ctx.font = badges.iconFont;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(icon, x - (isDifficulty ? 50 : 65), y);
+  ctx.fillText(icon, x - (isDifficulty ? 60 : 70), y);
   ctx.restore();
 
   // Texto
@@ -279,7 +316,28 @@ function drawStatBadge(
   ctx.font = isDifficulty ? badges.difficultyFont : badges.font;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, x + 30, y);
+  ctx.fillText(text, x + 25, y);
+  ctx.restore();
+}
+
+/**
+ * Dibuja elementos decorativos como confeti.
+ */
+function drawDecorations(ctx: CanvasRenderingContext2D) {
+  const { width, height } = ctx.canvas;
+  const { confettiColors } = STYLE_CONFIG.decorations;
+
+  ctx.save();
+  for (let i = 0; i < 50; i++) {
+    const x = Math.random() * width;
+    const y = Math.random() * height * 0.8;
+    const size = Math.random() * 15 + 5;
+    ctx.fillStyle = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+    ctx.globalAlpha = Math.random() * 0.7 + 0.3;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.restore();
 }
 
@@ -287,7 +345,7 @@ function drawStatBadge(
  * Dibuja el footer con la llamada a la acción.
  */
 function drawFooter(ctx: CanvasRenderingContext2D) {
-  const { width } = ctx.canvas;
+  const { width, height } = ctx.canvas;
   const { footer } = STYLE_CONFIG;
 
   ctx.save();
@@ -295,8 +353,9 @@ function drawFooter(ctx: CanvasRenderingContext2D) {
   ctx.font = footer.font;
   ctx.textAlign = 'center';
   ctx.shadowColor = footer.shadow;
-  ctx.shadowBlur = 10;
-  ctx.fillText('¿Puedes superarme? 🏆', width / 2, 240);
+  ctx.shadowBlur = 15;
+  ctx.shadowOffsetY = 4;
+  ctx.fillText('¿PUEDES SUPERARME? 🏆', width / 2, height - 40);
   ctx.restore();
 }
 
@@ -323,12 +382,13 @@ function generateShareImage(config: ShareConfig): Promise<string> {
 
       // Secuencia de dibujado
       drawBackground(ctx);
+      drawDecorations(ctx);
       drawHeader(ctx);
       drawScoreCircle(ctx, config.score);
       drawFooter(ctx);
 
-      const badgeY = 530;
-      const badgeSpacing = 350;
+      const badgeY = 500;
+      const badgeSpacing = 380;
       const accuracyX = canvas.width / 2 - badgeSpacing / 2;
       const difficultyX = canvas.width / 2 + badgeSpacing / 2;
 
@@ -361,7 +421,7 @@ function generateShareImage(config: ShareConfig): Promise<string> {
 function generateShareText(config: ShareConfig): string {
   const { score, accuracy, difficulty, unlockedAchievements } = config;
 
-  let text = `🏆 ¡${score} puntos en BuscaRonis!\n\n`;
+  let text = `🏆 ¡He conseguido ${score} puntos en BuscaRonis!\n\n`;
   text += `🎯 Precisión: ${accuracy}%\n`;
   text += `⚡ Dificultad: ${difficulty.toUpperCase()}\n`;
 
@@ -369,7 +429,7 @@ function generateShareText(config: ShareConfig): string {
     text += `\n🏅 Logros desbloqueados: ${unlockedAchievements.length}\n`;
   }
 
-  text += `\n¿Puedes superarme? 🍹\n`;
+  text += `\n¿Puedes superarme? ¡Juega ahora! 🍹\n`;
   text += `\n#Desalía #RonBarceló #BuscaRonis`;
 
   return text;
