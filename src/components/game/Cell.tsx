@@ -27,8 +27,8 @@ export const Cell = memo(
     boardSize = 'small',
   }: CellProps) {
     const [isPressingLong, setIsPressingLong] = useState(false);
-    const touchStartPos = useRef<{ x: number; y: number } | null>(null);
-    const SCROLL_THRESHOLD = 10; // píxeles de tolerancia
+    const touchStartPos = useRef<{ x: number; y: number; time: number } | null>(null);
+    const SCROLL_THRESHOLD = 15; // Aumentado a 15px para ser menos sensible
 
     // 📱 Long press para móvil (plantar bandera)
     const longPressHandlers = useLongPress({
@@ -43,6 +43,7 @@ export const Cell = memo(
         }
       },
       onClick: () => {
+        // ✅ SIMPLIFICADO: Solo verificar que no esté bloqueado
         if (!gameOver && !isRevealed && !isFlagged) {
           onClick();
         }
@@ -50,26 +51,30 @@ export const Cell = memo(
       delay: 500,
     });
 
-    // 📱 Detectar scroll vs click
+    // 📱 Detectar inicio del touch
     const handleTouchStart = (e: React.TouchEvent) => {
       touchStartPos.current = {
         x: e.touches[0].clientX,
         y: e.touches[0].clientY,
+        time: Date.now(),
       };
+
       if (!gameOver && !isRevealed && !isFlagged) {
         setIsPressingLong(true);
       }
     };
 
+    // 📱 Detectar si es scroll (movimiento significativo)
     const handleTouchMove = (e: React.TouchEvent) => {
       if (!touchStartPos.current) return;
 
       const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
       const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
 
-      // Si se movió más del threshold, cancelar
+      // Solo cancelar si hay MUCHO movimiento
       if (deltaX > SCROLL_THRESHOLD || deltaY > SCROLL_THRESHOLD) {
         setIsPressingLong(false);
+        // Avisar al hook que se movió
         longPressHandlers.onTouchMove?.();
       }
     };
@@ -78,6 +83,21 @@ export const Cell = memo(
       setIsPressingLong(false);
       touchStartPos.current = null;
       longPressHandlers.onTouchEnd?.();
+    };
+
+    // 🖱️ Desktop: Click normal
+    const handleClick = () => {
+      if (!gameOver && !isRevealed && !isFlagged) {
+        onClick();
+      }
+    };
+
+    // 🖱️ Desktop: Click derecho
+    const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      if (!gameOver && !isRevealed) {
+        onRightClick(e);
+      }
     };
 
     const getNumberColor = (num: number) => {
@@ -172,20 +192,13 @@ export const Cell = memo(
       return `${baseStyle} bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-[#FF6B35]/20 shadow-inner`;
     };
 
-    const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      if (!gameOver && !isRevealed) {
-        onRightClick(e);
-      }
-    };
-
     return (
       <div
         className={getCellStyle()}
+        // 🖱️ DESKTOP: Eventos normales
+        onClick={handleClick}
         onContextMenu={handleContextMenu}
-        onMouseDown={longPressHandlers.onMouseDown}
-        onMouseUp={longPressHandlers.onMouseUp}
-        onMouseLeave={longPressHandlers.onMouseLeave}
+        // 📱 MÓVIL: Touch events + long press
         onTouchStart={(e) => {
           handleTouchStart(e);
           longPressHandlers.onTouchStart?.();
@@ -198,7 +211,7 @@ export const Cell = memo(
     );
   },
   (prevProps, nextProps) => {
-    // Solo re-renderizar si estas props críticas cambian
+    // Solo re-renderizar si cambian props importantes
     return (
       prevProps.isRevealed === nextProps.isRevealed &&
       prevProps.isFlagged === nextProps.isFlagged &&
