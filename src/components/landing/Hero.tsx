@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 interface HeroProps {
   onPlayClick?: () => void;
@@ -11,16 +11,24 @@ export const Hero: React.FC<HeroProps> = ({ onPlayClick }) => {
     Array<{ id: number; left: number; delay: number; size: number }>
   >([]);
 
+  // 📱 Detectar si es móvil para optimizar rendimiento
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }, []);
+
   useEffect(() => {
-    // Generar partículas flotantes
-    const newParticles = Array.from({ length: 20 }, (_, i) => ({
+    // 📱 Reducir partículas en móvil: 5 vs 20 en desktop
+    const particleCount = isMobile ? 5 : 20;
+
+    const newParticles = Array.from({ length: particleCount }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
       delay: Math.random() * 25,
       size: Math.random() * 8 + 4,
     }));
     setParticles(newParticles);
-  }, []);
+  }, [isMobile]);
 
   const handlePlayClick = () => {
     if (onPlayClick) {
@@ -34,11 +42,22 @@ export const Hero: React.FC<HeroProps> = ({ onPlayClick }) => {
     }
   };
 
-  return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden animated-gradient">
-      <div className="noise-bg"></div>
+  // 📱 Clases optimizadas según dispositivo
+  const optimizedClasses = {
+    gradient: isMobile ? 'animated-gradient' : 'animated-gradient',
+    noise: isMobile ? 'noise-bg opacity-30' : 'noise-bg', // Menos opacidad en móvil
+    vignette: isMobile ? 'vignette opacity-50' : 'vignette', // Menos vignette en móvil
+    shadow: isMobile ? 'shadow-xl' : 'shadow-2xl',
+    blur: isMobile ? '' : 'hover:shadow-[0_0_40px_rgba(255,107,53,0.6)]',
+  };
 
-      <div className="absolute inset-0 vignette pointer-events-none"></div>
+  return (
+    <section
+      className={`relative min-h-screen flex items-center justify-center overflow-hidden ${optimizedClasses.gradient}`}
+    >
+      <div className={optimizedClasses.noise}></div>
+
+      <div className={`absolute inset-0 ${optimizedClasses.vignette} pointer-events-none`}></div>
 
       {particles.map((particle) => (
         <div
@@ -76,10 +95,10 @@ export const Hero: React.FC<HeroProps> = ({ onPlayClick }) => {
           <span className="font-bold text-[#4ECDC4]">Desalia</span>
         </p>
 
-        {/* Botón CTA */}
+        {/* Botón CTA - Optimizado para móvil */}
         <button
           onClick={handlePlayClick}
-          className="btn-primary group relative bg-gradient-to-r from-[#FF6B35] to-[#FF8C42] hover:from-[#FF8C42] hover:to-[#FF6B35] text-white font-knockout text-xl sm:text-2xl md:text-3xl px-8 sm:px-12 md:px-16 py-3 sm:py-4 md:py-6 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 sm:hover:scale-110 hover:shadow-[0_0_40px_rgba(255,107,53,0.6)] tracking-wider mb-16 sm:mb-20"
+          className={`btn-primary group relative bg-gradient-to-r from-[#FF6B35] to-[#FF8C42] hover:from-[#FF8C42] hover:to-[#FF6B35] text-white font-knockout text-xl sm:text-2xl md:text-3xl px-8 sm:px-12 md:px-16 py-3 sm:py-4 md:py-6 rounded-full ${optimizedClasses.shadow} transition-all duration-300 hover:scale-105 sm:hover:scale-110 ${optimizedClasses.blur} tracking-wider mb-16 sm:mb-20`}
         >
           JUGAR AHORA
           <span className="ml-2 sm:ml-3 inline-block transition-transform group-hover:translate-x-2">
