@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { Cell } from './Cell';
 
 interface CellData {
@@ -17,81 +16,70 @@ interface BoardProps {
   className?: string;
 }
 
-export const Board = memo(
-  function Board({
-    board,
-    onCellClick,
-    onCellRightClick,
-    gameOver,
-    explodedCell,
-    className = '',
-  }: BoardProps) {
-    const rows = board.length;
-    const cols = board[0]?.length || 0;
+export function Board({
+  board,
+  onCellClick,
+  onCellRightClick,
+  gameOver,
+  explodedCell,
+  className = '',
+}: BoardProps) {
+  const rows = board.length;
+  const cols = board[0]?.length || 0;
 
-    // Determinar el tamaño del tablero
-    const getBoardSize = (): 'small' | 'medium' | 'large' => {
-      if (cols >= 30) return 'large';
-      if (cols >= 16) return 'medium';
-      return 'small';
-    };
+  // Determinar el tamaño del tablero
+  const getBoardSize = (): 'small' | 'medium' | 'large' => {
+    if (cols >= 30) return 'large';
+    if (cols >= 16) return 'medium';
+    return 'small';
+  };
 
-    const boardSize = getBoardSize();
+  const boardSize = getBoardSize();
 
-    // Ajustar gap y padding según tamaño
-    const getSpacingClasses = () => {
-      switch (boardSize) {
-        case 'large':
-          return 'gap-[1px] p-1 sm:p-2';
-        case 'medium':
-          return 'gap-[1.5px] p-2 sm:p-3';
-        case 'small':
-        default:
-          return 'gap-[2px] p-3 sm:p-4';
-      }
-    };
+  // Ajustar gap y padding según tamaño
+  const getSpacingClasses = () => {
+    switch (boardSize) {
+      case 'large':
+        return 'gap-[1px] p-1 sm:p-2';
+      case 'medium':
+        return 'gap-[1.5px] p-2 sm:p-3';
+      case 'small':
+      default:
+        return 'gap-[2px] p-3 sm:p-4';
+    }
+  };
 
-    return (
+  return (
+    <div
+      className={`flex items-center justify-center p-2 sm:p-4 w-full overflow-x-auto ${className}`}
+    >
       <div
-        className={`flex items-center justify-center p-2 sm:p-4 w-full overflow-x-auto ${className}`}
+        className={`inline-grid ${getSpacingClasses()} bg-gradient-to-br from-[#FF6B35]/40 via-[#FF8C42]/30 to-[#FFA55F]/40 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-[#FF6B35]/50 relative noise-bg`}
+        style={{
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+          maxWidth: boardSize === 'large' ? '98vw' : boardSize === 'medium' ? '95vw' : '90vw',
+          touchAction: 'manipulation', // ← ÚNICO CAMBIO: Mejora el comportamiento táctil
+        }}
       >
-        <div
-          className={`inline-grid ${getSpacingClasses()} bg-gradient-to-br from-[#FF6B35]/40 via-[#FF8C42]/30 to-[#FFA55F]/40 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-[#FF6B35]/50 relative noise-bg`}
-          style={{
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-            maxWidth: boardSize === 'large' ? '98vw' : boardSize === 'medium' ? '95vw' : '90vw',
-            touchAction: 'pan-y', // 📱 Permitir scroll vertical, prevenir gestos horizontales
-          }}
-        >
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/5 to-white/10 pointer-events-none"></div>
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/5 to-white/10 pointer-events-none"></div>
 
-          {board.map((row, rowIndex) =>
-            row.map((cell, colIndex) => (
-              <Cell
-                key={`${rowIndex}-${colIndex}`}
-                isRevealed={cell.isRevealed}
-                isFlagged={cell.isFlagged}
-                isMine={cell.isMine}
-                adjacentMines={cell.adjacentMines}
-                onClick={() => onCellClick(rowIndex, colIndex)}
-                onRightClick={onCellRightClick(rowIndex, colIndex)}
-                gameOver={gameOver}
-                isExploded={explodedCell?.row === rowIndex && explodedCell?.col === colIndex}
-                boardSize={boardSize}
-              />
-            ))
-          )}
-        </div>
+        {board.map((row, rowIndex) =>
+          row.map((cell, colIndex) => (
+            <Cell
+              key={`${rowIndex}-${colIndex}`}
+              isRevealed={cell.isRevealed}
+              isFlagged={cell.isFlagged}
+              isMine={cell.isMine}
+              adjacentMines={cell.adjacentMines}
+              onClick={() => onCellClick(rowIndex, colIndex)}
+              onRightClick={onCellRightClick(rowIndex, colIndex)}
+              gameOver={gameOver}
+              isExploded={explodedCell?.row === rowIndex && explodedCell?.col === colIndex}
+              boardSize={boardSize}
+            />
+          ))
+        )}
       </div>
-    );
-  },
-  (prevProps, nextProps) => {
-    return (
-      prevProps.gameOver === nextProps.gameOver &&
-      prevProps.explodedCell?.row === nextProps.explodedCell?.row &&
-      prevProps.explodedCell?.col === nextProps.explodedCell?.col &&
-      prevProps.board.length === nextProps.board.length &&
-      prevProps.className === nextProps.className
-    );
-  }
-);
+    </div>
+  );
+}
