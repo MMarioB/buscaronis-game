@@ -33,7 +33,7 @@ export function GameOverModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg animate-in fade-in duration-500">
-      <div className="relative w-full max-w-2xl bg-gradient-to-br from-[#FF6B35]/95 via-[#FF8C42]/95 to-[#FFA55F]/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-[#FFC857]/70 overflow-hidden animate-in zoom-in-95 duration-500 noise-bg">
+      <div className="relative w-full max-w-2xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-[#FF6B35]/95 via-[#FF8C42]/95 to-[#FFA55F]/95 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-[#FFC857]/70 animate-in zoom-in-95 duration-500 noise-bg">
         <div
           className={`absolute top-0 left-0 right-0 h-2 shadow-lg ${
             isWon
