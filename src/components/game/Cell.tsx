@@ -28,21 +28,31 @@ export function Cell({
   const [isPressingLong, setIsPressingLong] = useState(false);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
   const hasMoved = useRef(false);
-  const SCROLL_THRESHOLD = 20; // 20px para detectar scroll
+  const justUsedRightClick = useRef(false);
+  const SCROLL_THRESHOLD = 20;
 
   const longPressHandlers = useLongPress({
     onLongPress: () => {
       if (!gameOver && !isRevealed && !hasMoved.current) {
         setIsPressingLong(false);
+        justUsedRightClick.current = true;
         const fakeEvent = new MouseEvent('contextmenu', {
           bubbles: true,
           cancelable: true,
         }) as unknown as React.MouseEvent<HTMLDivElement>;
         onRightClick(fakeEvent);
+
+        setTimeout(() => {
+          justUsedRightClick.current = false;
+        }, 100);
       }
     },
     onClick: () => {
-      // Solo ejecutar si NO se movió (no fue scroll)
+      if (justUsedRightClick.current) {
+        justUsedRightClick.current = false;
+        return;
+      }
+
       if (!gameOver && !isRevealed && !isFlagged && !hasMoved.current) {
         onClick();
       }
@@ -122,7 +132,6 @@ export function Cell({
   const getCellStyle = () => {
     const baseStyle = `${sizes.cell} border-2 flex items-center justify-center cursor-pointer transition-all duration-200 select-none rounded-lg relative`;
 
-    // Feedback visual solo si no se está moviendo
     const longPressEffect =
       isPressingLong && !hasMoved.current ? 'ring-4 ring-[#FFC857] scale-95' : '';
 
@@ -147,12 +156,18 @@ export function Cell({
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+
     if (!gameOver && !isRevealed) {
+      justUsedRightClick.current = true;
       onRightClick(e);
+
+      setTimeout(() => {
+        justUsedRightClick.current = false;
+      }, 100);
     }
   };
 
-  // Feedback visual al inicio del long press
   const handlePressStart = () => {
     if (!gameOver && !isRevealed && !isFlagged) {
       setIsPressingLong(true);
@@ -179,7 +194,6 @@ export function Cell({
     const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
     const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
 
-    // Si se movió más del threshold, marcar como scroll
     if (deltaX > SCROLL_THRESHOLD || deltaY > SCROLL_THRESHOLD) {
       hasMoved.current = true;
       setIsPressingLong(false);
