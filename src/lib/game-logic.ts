@@ -222,13 +222,11 @@ export function toggleFlag(
 
   if (cell.isRevealed) return newBoard;
 
-  // Si está quitando bandera, siempre permitir
   if (cell.isFlagged) {
     cell.isFlagged = false;
     return newBoard;
   }
 
-  // Si está poniendo bandera, verificar límite
   if (maxFlags !== undefined) {
     const currentFlags = countFlags(board, board.length, board[0].length);
     if (currentFlags >= maxFlags) {
