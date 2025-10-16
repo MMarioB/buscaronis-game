@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { Toaster, toast } from 'sonner';
 import { Hero } from '@/components/landing/Hero';
 import { HowToPlay } from '@/components/landing/HowToPlay';
 import { PrizesSection } from '@/components/landing/PrizesSection';
@@ -222,7 +223,6 @@ export default function Home() {
     [gameState, handleCellClick, setGameState, saveGameResult, playSound]
   );
 
-  // Manejar click derecho (bandera con pregunta)
   const onCellRightClick = useCallback(
     (row: number, col: number) => {
       return (e: React.MouseEvent<HTMLDivElement>) => {
@@ -231,17 +231,31 @@ export default function Home() {
         if (gameState === 'won' || gameState === 'lost' || gameState === 'ready') return;
 
         if (board[row]?.[col]?.isFlagged) {
-          handleCellRightClick(row, col);
+          const success = handleCellRightClick(row, col);
+          if (success) {
+            playSound('flag'); // Sonido al quitar bandera
+          }
           return;
         }
 
+        const maxFlags = DIFFICULTIES[difficulty].mines;
+        if (flagCount >= maxFlags) {
+          toast.error('⚠️ Ya has usado todas tus banderas', {
+            description: `Límite: ${maxFlags} banderas`,
+            duration: 2000,
+          });
+          playSound('incorrect');
+          return;
+        }
+
+        // ✅ MOSTRAR PREGUNTA SOLO SI NO HAY BANDERA Y HAY ESPACIO
         if (!board[row]?.[col]?.isRevealed) {
           setPendingFlag({ row, col });
           setCurrentQuestion(getRandomQuestion());
         }
       };
     },
-    [gameState, board, handleCellRightClick, getRandomQuestion]
+    [gameState, board, handleCellRightClick, getRandomQuestion, flagCount, difficulty, playSound]
   );
 
   // Manejar respuesta a pregunta
@@ -256,8 +270,17 @@ export default function Home() {
       if (isCorrect) {
         playSound('correct');
         addCorrectAnswer();
-        handleCellRightClick(pendingFlag.row, pendingFlag.col);
-        setTimeout(() => playSound('flag'), 300);
+
+        const success = handleCellRightClick(pendingFlag.row, pendingFlag.col);
+
+        if (success) {
+          setTimeout(() => playSound('flag'), 300);
+        } else {
+          // ✅ Si falla toast
+          toast.error('⚠️ Límite de banderas alcanzado', {
+            duration: 2000,
+          });
+        }
       } else {
         playSound('incorrect');
         addIncorrectAnswer();
@@ -304,6 +327,8 @@ export default function Home() {
 
   return (
     <>
+      <Toaster position="top-center" richColors />
+
       <Hero onPlayClick={scrollToGame} />
       <HowToPlay />
       <PrizesSection />

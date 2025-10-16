@@ -211,13 +211,32 @@ export function getSafeCells(board: Board, rows: number, cols: number): Position
  * @param col - Columna
  * @returns Nuevo tablero con bandera alternada
  */
-export function toggleFlag(board: Board, row: number, col: number): Board {
+export function toggleFlag(
+  board: Board,
+  row: number,
+  col: number,
+  maxFlags?: number
+): Board | null {
   const newBoard: Board = JSON.parse(JSON.stringify(board));
+  const cell = newBoard[row][col];
 
-  if (!newBoard[row][col].isRevealed) {
-    newBoard[row][col].isFlagged = !newBoard[row][col].isFlagged;
+  if (cell.isRevealed) return newBoard;
+
+  // Si está quitando bandera, siempre permitir
+  if (cell.isFlagged) {
+    cell.isFlagged = false;
+    return newBoard;
   }
 
+  // Si está poniendo bandera, verificar límite
+  if (maxFlags !== undefined) {
+    const currentFlags = countFlags(board, board.length, board[0].length);
+    if (currentFlags >= maxFlags) {
+      return null; // Límite alcanzado
+    }
+  }
+
+  cell.isFlagged = true;
   return newBoard;
 }
 
