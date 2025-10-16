@@ -46,9 +46,9 @@ export const DESALIA_QUESTIONS: Question[] = [
   {
     id: '7',
     question: 'Que ingrediente principal se usa en Ron Barcelo?',
-    options: ['Melaza', 'Cana de azucar', 'Miel', 'Agave'],
+    options: ['Melaza', 'Caña de azucar', 'Miel', 'Agave'],
     correct: 1,
-    explanation: 'Ron Barcelo se elabora con cana de azucar de alta calidad.',
+    explanation: 'Ron Barcelo se elabora con caña de azucar de alta calidad.',
   },
   {
     id: '8',
@@ -173,20 +173,20 @@ export const DESALIA_QUESTIONS: Question[] = [
   },
   {
     id: '22',
-    question: 'De donde proviene el 100% de la cana de azucar que utiliza Ron Barcelo?',
+    question: 'De donde proviene el 100% de la caña de azucar que utiliza Ron Barcelo?',
     options: [
       'La importan de Cuba',
-      'De sus propios canaverales',
+      'De sus propios cañaverales',
       'La compran a agricultores locales',
       'De plantaciones en Brasil',
     ],
     correct: 1,
     explanation:
-      'Ron Barcelo utiliza exclusivamente el jugo de la cana de azucar de sus propios canaverales en Republica Dominicana.',
+      'Ron Barcelo utiliza exclusivamente el jugo de la caña de azucar de sus propios cañaverales en Republica Dominicana.',
   },
   {
     id: '23',
-    question: 'Que significa que un ron sea "de jugo de cana" en lugar de "de melaza"?',
+    question: 'Que significa que un ron sea "de jugo de caña" en lugar de "de melaza"?',
     options: [
       'Es mas dulce',
       'Es de menor calidad',
@@ -195,7 +195,7 @@ export const DESALIA_QUESTIONS: Question[] = [
     ],
     correct: 2,
     explanation:
-      'Utilizar el jugo fresco de la cana (guarapo) en vez de la melaza resulta en un ron de estilo agricola, apreciado por su suavidad y pureza.',
+      'Utilizar el jugo fresco de la caña (guarapo) en vez de la melaza resulta en un ron de estilo agricola, apreciado por su suavidad y pureza.',
   },
   {
     id: '24',
@@ -327,7 +327,7 @@ export const DESALIA_QUESTIONS: Question[] = [
   {
     id: '35',
     question:
-      'En la elaboracion de Ron Barcelo, que se hace con la "bagasse" (los restos de la cana de azucar)?',
+      'En la elaboracion de Ron Barcelo, que se hace con la "bagasse" (los restos de la caña de azucar)?',
     options: [
       'Se desecha',
       'Se usa para alimentar animales',
@@ -491,7 +491,7 @@ export const DESALIA_QUESTIONS: Question[] = [
     ],
     correct: 1,
     explanation:
-      'La palmera es un simbolo iconico del Caribe, evocando el origen tropical y la materia prima (cana de azucar) de Ron Barcelo.',
+      'La palmera es un simbolo iconico del Caribe, evocando el origen tropical y la materia prima caña de azucar) de Ron Barcelo.',
   },
   {
     id: '49',
@@ -576,13 +576,13 @@ export const DESALIA_QUESTIONS: Question[] = [
     question: 'Que es el "guarapo" en el proceso de elaboracion del ron?',
     options: [
       'El residuo de la destilacion',
-      'El jugo extraido directamente de la cana de azucar',
+      'El jugo extraido directamente de la caña de azucar',
       'El ron una vez envejecido',
       'El coctel mas famoso de la destileria',
     ],
     correct: 1,
     explanation:
-      'El guarapo es el jugo fresco y puro de la cana de azucar, y Barcelo es de los pocos rones que lo usan para su fermentacion, lo que le da su suavidad.',
+      'El guarapo es el jugo fresco y puro de la caña de azucar, y Barcelo es de los pocos rones que lo usan para su fermentacion, lo que le da su suavidad.',
   },
   {
     id: '57',
